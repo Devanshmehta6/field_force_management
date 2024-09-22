@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "21459467072",
+    "project_id": "field-force-management-52800",
+    "storage_bucket": "field-force-management-52800.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:21459467072:android:2febe43e8d60af534e18a5",
+        "android_client_info": {
+          "package_name": "com.example.field_force_management"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyASzl22tPY7GNY2__cRsCZ9we3UkpNmmqA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
