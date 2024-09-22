@@ -5,6 +5,7 @@ import 'package:field_force_management/screens/login_screen.dart';
 import 'package:field_force_management/widgets/input_field.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class SignUpScreen extends StatefulWidget {
   const SignUpScreen({super.key});
@@ -40,11 +41,11 @@ class _SignUpScreenState extends State<SignUpScreen> {
     }
   }
 
-  Future addDetails() async{
+  Future addDetails() async {
     await FirebaseFirestore.instance.collection('Employee Attendance').add({
-      "username" : userNameCont.text.trim(),
-      "email" : emailCont.text.trim(),
-      "phone" : phoneCont.text.trim()
+      "username": userNameCont.text.trim(),
+      "email": emailCont.text.trim(),
+      "phone": phoneCont.text.trim()
     });
   }
 
@@ -64,12 +65,12 @@ class _SignUpScreenState extends State<SignUpScreen> {
                     children: [
                       Text(
                         "Welcome! New User",
-                        style: TextStyle(
+                        style: GoogleFonts.poppins(
                             fontSize: 24, fontWeight: FontWeight.bold),
                       ),
                       Text(
                         "Sign Up Here",
-                        style: TextStyle(
+                        style: GoogleFonts.poppins(
                             fontSize: 20, fontWeight: FontWeight.normal),
                       ),
                       SizedBox(height: 25),
@@ -101,15 +102,17 @@ class _SignUpScreenState extends State<SignUpScreen> {
                         maxLength: 10,
                         controller: phoneCont,
                         decoration: InputDecoration(
-                          fillColor: Colors.grey.shade100,
-                          filled: true,
-                          hintText: "Phone Number",
-                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(15))
-                        ),
+                            fillColor: Colors.grey.shade100,
+                            filled: true,
+                            hintText: "Phone Number",
+                            border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(15))),
                       ),
                       SizedBox(height: 25),
                       ElevatedButton(
-                          child: Text("Sign Up"),
+                          child: Text("Sign Up",
+                              style: GoogleFonts.poppins(
+                                  fontSize: 16, fontWeight: FontWeight.normal)),
                           onPressed: () {
                             signup();
                           },
@@ -124,9 +127,13 @@ class _SignUpScreenState extends State<SignUpScreen> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Text("Already signed in?"),
+                      Text("Already signed in?",
+                          style: GoogleFonts.poppins(
+                              fontSize: 16, fontWeight: FontWeight.normal)),
                       TextButton(
-                          child: Text("Login here"),
+                          child: Text("Login here",
+                              style: GoogleFonts.poppins(
+                                  fontSize: 16, fontWeight: FontWeight.normal)),
                           onPressed: () {
                             Navigator.of(context).pushReplacement(
                               MaterialPageRoute(

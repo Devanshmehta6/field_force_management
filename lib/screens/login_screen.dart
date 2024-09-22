@@ -6,6 +6,7 @@ import 'package:field_force_management/widgets/input_field.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -67,12 +68,12 @@ class _LoginScreenState extends State<LoginScreen> {
                     children: [
                       Text(
                         "Welcome!",
-                        style: TextStyle(
+                        style: GoogleFonts.poppins(
                             fontSize: 24, fontWeight: FontWeight.bold),
                       ),
                       Text(
                         "Login Here",
-                        style: TextStyle(
+                        style: GoogleFonts.poppins(
                             fontSize: 20, fontWeight: FontWeight.normal),
                       ),
                       SizedBox(height: 25),
@@ -88,7 +89,9 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                       SizedBox(height: 20),
                       ElevatedButton(
-                          child: Text("Login"),
+                          child: Text("Login",
+                              style: GoogleFonts.poppins(
+                                  fontSize: 16, fontWeight: FontWeight.normal)),
                           onPressed: () {
                             loginIn();
                           },
@@ -103,9 +106,13 @@ class _LoginScreenState extends State<LoginScreen> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Text("New user?"),
+                      Text("New user?",
+                          style: GoogleFonts.poppins(
+                              fontSize: 16, fontWeight: FontWeight.normal)),
                       TextButton(
-                          child: Text("Sign Up here"),
+                          child: Text("Sign Up here",
+                              style: GoogleFonts.poppins(
+                                  fontSize: 16, fontWeight: FontWeight.normal)),
                           onPressed: () {
                             Navigator.of(context).pushReplacement(
                               MaterialPageRoute(
