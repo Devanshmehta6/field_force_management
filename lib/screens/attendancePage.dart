@@ -3,12 +3,13 @@ import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:field_force_management/constants.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:field_force_management/models/user.dart';
 import 'package:intl/intl.dart';
+import 'package:month_year_picker/month_year_picker.dart';
 import 'package:slide_to_act/slide_to_act.dart';
-import 'package:swipeable_tile/swipeable_tile.dart';
 
 class Attendancepage extends StatefulWidget {
   const Attendancepage({super.key});
@@ -59,20 +60,17 @@ class _AttendancepageState extends State<Attendancepage>
 
   void getRecord() async {
     try {
-      print("cqguqth");
       final querySnapshot = await FirebaseFirestore.instance
           .collection('Employee Attendance')
           .where('email', isEqualTo: UserModel.email)
           .get();
-
+      // UserModel.id = querySnapshot.docs[0].id;
       final snap = await FirebaseFirestore.instance
           .collection("Employee Attendance")
           .doc(querySnapshot.docs[0].id)
           .collection("Record")
           .doc(DateFormat("dd MMMM yyyy").format(DateTime.now()))
           .get();
-
-      print("cehck in ${UserModel.username}");
 
       setState(() {
         checkin = snap["checkin"];
@@ -98,6 +96,8 @@ class _AttendancepageState extends State<Attendancepage>
     // TODO: implement dispose
     super.dispose();
   }
+
+  String _month = DateFormat("MMMM").format(DateTime.now());
 
   @override
   Widget build(BuildContext context) {
@@ -127,7 +127,7 @@ class _AttendancepageState extends State<Attendancepage>
                   future: fetchUserName(),
                   builder: (context, snapshot) {
                     if (snapshot.connectionState == ConnectionState.waiting) {
-                      return const CircularProgressIndicator();
+                      return CupertinoActivityIndicator();
                     } else if (snapshot.hasData) {
                       final userData = snapshot.data!;
                       final name = userData['username'] as String?;
@@ -178,7 +178,8 @@ class _AttendancepageState extends State<Attendancepage>
                                     fontWeight: FontWeight.normal)),
                           ),
                           StreamBuilder(
-                              stream: Stream.periodic(Duration(seconds: 1)),
+                              stream: Stream.periodic(Duration(seconds: 1))
+                                  .asBroadcastStream(),
                               builder: (context, snapshot) {
                                 return Container(
                                   alignment: Alignment.topLeft,
@@ -279,7 +280,6 @@ class _AttendancepageState extends State<Attendancepage>
                                             .where('email',
                                                 isEqualTo: UserModel.email)
                                             .get();
-                                    print(querySnapshot.docs[0]['email']);
 
                                     final snap = await FirebaseFirestore
                                         .instance
@@ -298,6 +298,7 @@ class _AttendancepageState extends State<Attendancepage>
                                           .doc(DateFormat("dd MMMM yyyy")
                                               .format(DateTime.now()))
                                           .update({
+                                        "date": Timestamp.now(),
                                         "checkout": DateFormat("hh:mm")
                                             .format(DateTime.now()),
                                       });
@@ -312,52 +313,16 @@ class _AttendancepageState extends State<Attendancepage>
                                           .doc(DateFormat("dd MMMM yyyy")
                                               .format(DateTime.now()))
                                           .set({
+                                        "date": Timestamp.now(),
                                         "checkin": DateFormat("hh:mm")
                                             .format(DateTime.now()),
+                                        "checkout": "--/--"
                                       });
                                       checkin = DateFormat("hh:mm")
                                           .format(DateTime.now());
                                     }
 
-                                    setState(() {
-                                      
-                                    });
-                                    // if (snap.exists) {
-                                    //   print("key 1----------- ${key.currentState!.submitted}");
-                                    //   setState(() {
-                                    //     checkout = DateFormat("hh:mm")
-                                    //         .format(DateTime.now());
-                                    //   });
-                                    //   print("exists");
-                                    //   await FirebaseFirestore.instance
-                                    //       .collection("Employee Attendance")
-                                    //       .doc(querySnapshot.docs[0].id)
-                                    //       .collection("Record")
-                                    //       .doc(DateFormat("dd MMMM yyyy")
-                                    //           .format(DateTime.now())
-                                    //           .toString())
-                                    //       .update({
-                                    //     "checkout": DateFormat("hh:mm")
-                                    //         .format(DateTime.now())
-                                    //   });
-                                    // } else {
-                                    //   print("key ----------- ${key.currentState!.submitted}");
-                                    //   setState(() {
-                                    //     checkin = DateFormat("hh:mm")
-                                    //         .format(DateTime.now());
-                                    //   });
-                                    //   await FirebaseFirestore.instance
-                                    //       .collection("Employee Attendance")
-                                    //       .doc(querySnapshot.docs[0].id)
-                                    //       .collection("Record")
-                                    //       .doc(DateFormat("dd MMMM yyyy")
-                                    //           .format(DateTime.now()))
-                                    //       .set({
-                                    //     "checkin": DateFormat("hh:mm")
-                                    //         .format(DateTime.now()),
-                                    //   });
-
-                                    // }
+                                    setState(() {});
                                   },
                                 );
                               }),
@@ -373,7 +338,238 @@ class _AttendancepageState extends State<Attendancepage>
                   ),
                 ),
               ),
-              Icon(Icons.directions)
+              Container(
+                margin: EdgeInsets.only(top: 12, right: 12, left: 12),
+                child: SingleChildScrollView(
+                  scrollDirection: Axis.vertical,
+                  child: Column(
+                    children: [
+                      Container(
+                        alignment: Alignment.topLeft,
+                        margin: EdgeInsets.only(top: 12),
+                        child: Text(
+                          "Track your history",
+                          style: GoogleFonts.poppins(
+                              fontSize: 18, fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                      Stack(
+                        children: [
+                          Container(
+                            margin: EdgeInsets.only(top: 12, left: 12),
+                            alignment: Alignment.centerLeft,
+                            child: Text(
+                              _month,
+                              style: GoogleFonts.poppins(
+                                  fontSize: 18, fontWeight: FontWeight.w400),
+                            ),
+                          ),
+                          Container(
+                            margin: EdgeInsets.only(top: 12, right: 12),
+                            alignment: Alignment.centerRight,
+                            child: GestureDetector(
+                              onTap: () async {
+                                final month = await showMonthYearPicker(
+                                    context: context,
+                                    initialDate: DateTime.now(),
+                                    firstDate: DateTime(2024),
+                                    lastDate: DateTime(2099),
+                                    builder: (context, child) {
+                                      return Theme(
+                                        child: child!,
+                                        data: Theme.of(context).copyWith(
+                                          colorScheme: ColorScheme.light(
+                                            primary: Colors.purple.shade200,
+                                            secondary: Colors.purple.shade200,
+                                            onSecondary: Colors.white,
+                                          ),
+                                          textButtonTheme: TextButtonThemeData(
+                                            style: TextButton.styleFrom(
+                                              // backgroundColor:
+                                              //     Colors.purple.shade200,
+                                            ),
+                                          ),
+                                          textTheme: TextTheme(
+                                            headlineMedium: GoogleFonts.poppins(
+                                                fontSize: 20, fontWeight: FontWeight.normal),
+                                            headlineLarge: GoogleFonts.poppins(
+                                                fontSize: 22, fontWeight: FontWeight.bold),
+                                            headlineSmall: GoogleFonts.poppins(
+                                                fontSize: 16, fontWeight: FontWeight.bold),
+                                          ),
+                                        ),
+                                      );
+                                    });
+
+                                if (month != null) {
+                                  print(month);
+                                  setState(() {
+                                    _month = DateFormat("MMMM").format(month);
+                                    print(_month);
+                                  });
+                                }
+                              },
+                              child: Text(
+                                "Pick a month here",
+                                style: GoogleFonts.poppins(
+                                  color: Colors.purple.shade200,
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.normal),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      Container(
+                        height: height - height / 5,
+                        child: StreamBuilder<QuerySnapshot>(
+                            stream: FirebaseFirestore.instance
+                                .collection("Employee Attendance")
+                                .doc(UserModel.id)
+                                .collection("Record")
+                                .snapshots(),
+                            builder: (BuildContext context,
+                                AsyncSnapshot<QuerySnapshot> snapshot) {
+                              if (snapshot.connectionState ==
+                                  ConnectionState.waiting)
+                                return CupertinoActivityIndicator();
+                              else {
+                                if (snapshot.hasData) {
+                                  final snap = snapshot.data!.docs;
+                                  return ListView.builder(
+                                      itemCount: snap!.length,
+                                      itemBuilder: (context, index) {
+                                        print(_month);
+                                        return DateFormat("MMMM").format(
+                                                    snap[index]["date"]
+                                                        .toDate()) ==
+                                                _month
+                                            ? Container(
+                                                margin: EdgeInsets.only(
+                                                    top: 12, left: 6, right: 6),
+                                                height: height / 5,
+                                                decoration: BoxDecoration(
+                                                  color: Colors.white,
+                                                  boxShadow: [
+                                                    BoxShadow(
+                                                        color: Colors.black26,
+                                                        offset: Offset(2, 20),
+                                                        blurRadius: 10),
+                                                  ],
+                                                  borderRadius:
+                                                      BorderRadius.all(
+                                                          Radius.circular(15)),
+                                                ),
+                                                child: Row(
+                                                  mainAxisAlignment:
+                                                      MainAxisAlignment.center,
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.center,
+                                                  children: [
+                                                    Expanded(
+                                                      child: Container(
+                                                        margin: EdgeInsets.only(
+                                                            left: 30),
+                                                        child: Text(
+                                                          DateFormat("EE dd")
+                                                              .format(snap[
+                                                                          index]
+                                                                      ["date"]
+                                                                  .toDate()),
+                                                          // snap[index].id.substring(0,2) + " " +snap[index].id.substring(3,6),
+                                                          style: GoogleFonts
+                                                              .poppins(
+                                                                  color: Colors
+                                                                      .purple
+                                                                      .shade300,
+                                                                  fontSize: 16,
+                                                                  fontWeight:
+                                                                      FontWeight
+                                                                          .normal),
+                                                        ),
+                                                      ),
+                                                    ),
+                                                    Expanded(
+                                                      child: Column(
+                                                        mainAxisAlignment:
+                                                            MainAxisAlignment
+                                                                .center,
+                                                        crossAxisAlignment:
+                                                            CrossAxisAlignment
+                                                                .center,
+                                                        children: [
+                                                          Text(
+                                                            "Check In",
+                                                            style: GoogleFonts
+                                                                .poppins(
+                                                                    fontSize:
+                                                                        16,
+                                                                    fontWeight:
+                                                                        FontWeight
+                                                                            .normal),
+                                                          ),
+                                                          Text(
+                                                            snap[index]
+                                                                ["checkin"],
+                                                            style: GoogleFonts
+                                                                .poppins(
+                                                                    fontSize:
+                                                                        18,
+                                                                    fontWeight:
+                                                                        FontWeight
+                                                                            .bold),
+                                                          ),
+                                                        ],
+                                                      ),
+                                                    ),
+                                                    Expanded(
+                                                      child: Column(
+                                                        mainAxisAlignment:
+                                                            MainAxisAlignment
+                                                                .center,
+                                                        crossAxisAlignment:
+                                                            CrossAxisAlignment
+                                                                .center,
+                                                        children: [
+                                                          Text(
+                                                            "Check Out",
+                                                            style: GoogleFonts
+                                                                .poppins(
+                                                                    fontSize:
+                                                                        16,
+                                                                    fontWeight:
+                                                                        FontWeight
+                                                                            .normal),
+                                                          ),
+                                                          Text(
+                                                            snap[index]
+                                                                ["checkout"],
+                                                            style: GoogleFonts
+                                                                .poppins(
+                                                                    fontSize:
+                                                                        18,
+                                                                    fontWeight:
+                                                                        FontWeight
+                                                                            .bold),
+                                                          ),
+                                                        ],
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                              )
+                                            : SizedBox();
+                                      });
+                                } else {
+                                  return Text("No record found");
+                                }
+                              }
+                            }),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
             ],
           ),
         ),

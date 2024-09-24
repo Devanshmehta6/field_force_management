@@ -1,4 +1,6 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:field_force_management/constants.dart';
+import 'package:field_force_management/models/user.dart';
 import 'package:field_force_management/screens/attendancePage.dart';
 import 'package:field_force_management/screens/login_screen.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -13,6 +15,28 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  void getId() async {
+    String? email = "";
+    final User? user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      email = user.email;
+    } else {
+      return null;
+    }
+    final querySnapshot = await FirebaseFirestore.instance
+        .collection('Employee Attendance')
+        .where('email', isEqualTo: email)
+        .get();
+    UserModel.id = querySnapshot.docs[0].id;
+  }
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    getId();
+  }
+
   @override
   Widget build(BuildContext context) {
     var width = MediaQuery.of(context).size.width;
