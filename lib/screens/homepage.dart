@@ -1,4 +1,7 @@
 import 'package:field_force_management/constants.dart';
+import 'package:field_force_management/screens/attendancePage.dart';
+import 'package:field_force_management/screens/login_screen.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -16,7 +19,60 @@ class _HomePageState extends State<HomePage> {
     return Scaffold(
       appBar: AppBar(
         title: Text('HomePage', style: GoogleFonts.poppins(fontSize: 16)),
-        backgroundColor: Colors.purple.shade200,
+        backgroundColor: Colors.purple.shade300,
+      ),
+      drawer: Drawer(
+        child: ListView(
+          padding: EdgeInsets.zero,
+          children: [
+            DrawerHeader(
+              decoration: BoxDecoration(
+                color: Colors.blue,
+              ),
+              child: const Text(
+                'Drawer Header',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 24,
+                ),
+              ),
+            ),
+            ListTile(
+              leading: Icon(Icons.home),
+              title: Text('Home', style: GoogleFonts.poppins(fontSize: 16)),
+              onTap: () {
+                Navigator.of(context).pushReplacement(
+                  MaterialPageRoute(
+                    builder: (context) => HomePage(),
+                  ),
+                );
+              },
+            ),
+            ListTile(
+              leading: Icon(Icons.logout),
+              title: Text('Log Out', style: GoogleFonts.poppins(fontSize: 16)),
+              onTap: () async {
+                // Handle settings navigation
+                try {
+                  await FirebaseAuth.instance.signOut();
+                  print('User signed out successfully');
+                  Navigator.of(context).pushReplacement(
+                    MaterialPageRoute(
+                      builder: (context) => LoginScreen(),
+                    ),
+                  );
+                } catch (e) {
+                  String error = e.toString();
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(error.substring(error.indexOf(']') + 1)),
+                    ),
+                  );
+                }
+              },
+            ),
+          ],
+        ),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -32,26 +88,37 @@ class _HomePageState extends State<HomePage> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       FeatureCard(
-                        icon: Icons.location_on,
-                        title: 'Location Tracking',
-                        subtitle: 'Check the real-time location of your field employees',
-                        buttonLabel: 'Learn More →',
-                        color: Colors.blue,
-                      ),
+                          icon: Icons.location_on,
+                          title: 'Location Tracking',
+                          subtitle:
+                              'Check the real-time location of your field employees',
+                          buttonLabel: 'Manage →',
+                          page: MaterialPageRoute(
+                              builder: (context) => HomePage())),
                       FeatureCard(
-                        icon: Icons.group,
-                        title: 'Attendance',
-                        subtitle: 'Attendance marking with location & track working hours',
-                        buttonLabel: 'Learn More →',
-                        color: Colors.green,
-                      ),
+                          icon: Icons.group,
+                          title: 'Attendance',
+                          subtitle:
+                              'Attendance marking with location & track working hours',
+                          buttonLabel: 'Manage →',
+                          page: MaterialPageRoute(
+                              builder: (context) => Attendancepage())),
                       FeatureCard(
-                        icon: Icons.grid_view,
-                        title: 'Client Visits',
-                        subtitle: 'Get Geo-verified client visits, photos & forms',
-                        buttonLabel: 'Learn More →',
-                        color: Colors.red,
-                      ),
+                          icon: Icons.grid_view,
+                          title: 'Client Visits',
+                          subtitle:
+                              'Get Geo-verified client visits, photos & forms',
+                          buttonLabel: 'Manage →',
+                          page: MaterialPageRoute(
+                              builder: (context) => HomePage())),
+                      FeatureCard(
+                          icon: Icons.grid_view,
+                          title: 'Inventory Manager',
+                          subtitle:
+                              'Manage your inventory across all the stores',
+                          buttonLabel: 'Manage →',
+                          page: MaterialPageRoute(
+                              builder: (context) => HomePage())),
                     ],
                   ),
                 ),
@@ -59,30 +126,43 @@ class _HomePageState extends State<HomePage> {
             } else {
               // Mobile layout
               return SizedBox(
-                height:constraints.maxHeight,
+                height: constraints.maxHeight,
                 child: SingleChildScrollView(
                   child: Column(
                     children: [
                       FeatureCard(
-                        icon: Icons.location_on,
-                        title: 'Location Tracking',
-                        subtitle: 'Check the real-time location of your field employees',
-                        buttonLabel: 'Learn More →',
-                        color: Colors.blue,
-                      ),
+                          icon: Icons.location_on,
+                          title: 'Location Tracking',
+                          subtitle:
+                              'Check the real-time location of your field employees',
+                          buttonLabel: 'Manage →',
+                          page: MaterialPageRoute(
+                              builder: (context) => HomePage())),
                       FeatureCard(
                         icon: Icons.group,
                         title: 'Attendance',
-                        subtitle: 'Attendance marking with location & track working hours',
-                        buttonLabel: 'Learn More →',
-                        color: Colors.green,
+                        subtitle:
+                            'Attendance marking with location & track working hours',
+                        buttonLabel: 'Manage →',
+                        page: MaterialPageRoute(
+                            builder: (context) => Attendancepage()),
                       ),
                       FeatureCard(
                         icon: Icons.grid_view,
                         title: 'Client Visits',
-                        subtitle: 'Get Geo-verified client visits, photos & forms',
-                        buttonLabel: 'Learn More →',
-                        color: Colors.red,
+                        subtitle:
+                            'Get Geo-verified client visits, photos & forms',
+                        buttonLabel: 'Manage →',
+                        page:
+                            MaterialPageRoute(builder: (context) => HomePage()),
+                      ),
+                      FeatureCard(
+                        icon: Icons.inventory,
+                        title: 'Inventory Manager',
+                        subtitle: 'Manage your inventory across all the stores',
+                        buttonLabel: 'Manage →',
+                        page:
+                            MaterialPageRoute(builder: (context) => HomePage()),
                       ),
                     ],
                   ),
@@ -101,62 +181,58 @@ class FeatureCard extends StatelessWidget {
   final String title;
   final String subtitle;
   final String buttonLabel;
-  final Color color;
+  final MaterialPageRoute page;
   const FeatureCard({
     required this.icon,
     required this.title,
     required this.subtitle,
-    required this.buttonLabel, required this.color,
+    required this.buttonLabel,
+    required this.page,
   });
 
   @override
   Widget build(BuildContext context) {
     double width = MediaQuery.of(context).size.width;
     double height = MediaQuery.of(context).size.height;
-    
-    return  Container(
-        height: isWeb ? height / 2.5 : height / 3,
-        width: isWeb ? width / 4 : width / 1.2,
-        
-        child: Card(
-          elevation: 2,
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child:  Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Icon(
-                  icon, 
-                  size: 48.0,
-                  color: Colors.blue,
+
+    return Container(
+      height: isWeb ? height / 2.5 : height / 3,
+      width: isWeb ? width / 4 : width / 1.2,
+      child: Card(
+        elevation: 2,
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Icon(
+                icon,
+                size: 48.0,
+                color: Colors.purple.shade200,
+              ),
+              SizedBox(height: isWeb ? 8 : 2),
+              Text(title,
+                  style: GoogleFonts.poppins(
+                      fontSize: 18, fontWeight: FontWeight.bold)),
+              SizedBox(height: isWeb ? 8 : 2),
+              Text(subtitle,
+                  style: GoogleFonts.poppins(
+                      fontSize: 16, fontWeight: FontWeight.normal)),
+              SizedBox(height: isWeb ? 8 : 2),
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.pushReplacement(context, page);
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.purple.shade200,
+                  foregroundColor: Colors.white,
                 ),
-                SizedBox(height: isWeb ? 8 : 2),
-                Text(
-                  title,
-                  style: const TextStyle(
-                    fontSize: 18.0,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                SizedBox(height: isWeb ? 8 : 2),
-                Text(
-                  subtitle,
-                  style: const TextStyle(
-                    fontSize: 14.0,
-                    color: Colors.grey,
-                  ),
-                ),
-                SizedBox(height: isWeb ? 8 : 2),
-                ElevatedButton(
-                  onPressed: () {
-                    // Implement button action here
-                  },
-                  child: Text(buttonLabel),
-                ),
-              ],
-            ),
+                child: Text(buttonLabel),
+              ),
+            ],
           ),
         ),
+      ),
     );
   }
 }

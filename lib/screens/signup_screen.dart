@@ -15,6 +15,9 @@ class SignUpScreen extends StatefulWidget {
 }
 
 class _SignUpScreenState extends State<SignUpScreen> {
+  String? selectedRole;
+  final List<String> roles = ['Admin', 'Employee'];
+
   final TextEditingController emailCont = TextEditingController();
   final TextEditingController passCont = TextEditingController();
   final TextEditingController userNameCont = TextEditingController();
@@ -45,7 +48,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
     await FirebaseFirestore.instance.collection('Employee Attendance').add({
       "username": userNameCont.text.trim(),
       "email": emailCont.text.trim(),
-      "phone": phoneCont.text.trim()
+      "phone": phoneCont.text.trim(),
+      "role" : selectedRole
     });
   }
 
@@ -97,6 +101,30 @@ class _SignUpScreenState extends State<SignUpScreen> {
                       //   controller: phoneCont,
                       //   isPassword: false,
                       // ),
+                      DropdownButtonFormField<String>(
+                        value: selectedRole,
+                        items: roles.map((String role) {
+                          return DropdownMenuItem<String>(
+                            value: role,
+                            child: Text(role, style: GoogleFonts.poppins(
+                                  fontSize: 16, fontWeight: FontWeight.normal)),
+                          );
+                        }).toList(),
+                        onChanged: (String? newValue) {
+                          setState(() {
+                            selectedRole = newValue;
+                          });
+                        },
+                        decoration: InputDecoration(
+                          labelText: 'Select Role',
+                          fillColor: Colors.grey.shade100,
+                          filled: true,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(15),
+                          ),
+                        ),
+                      ),
+                      SizedBox(height: 25),
                       TextField(
                         keyboardType: TextInputType.number,
                         maxLength: 10,

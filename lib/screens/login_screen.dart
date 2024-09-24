@@ -4,6 +4,7 @@ import 'package:field_force_management/screens/homepage.dart';
 import 'package:field_force_management/screens/signup_screen.dart';
 import 'package:field_force_management/widgets/input_field.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -114,6 +115,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               style: GoogleFonts.poppins(
                                   fontSize: 16, fontWeight: FontWeight.normal)),
                           onPressed: () {
+                            
                             Navigator.of(context).pushReplacement(
                               MaterialPageRoute(
                                 builder: (context) => SignUpScreen(),
