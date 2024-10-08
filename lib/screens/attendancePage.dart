@@ -1,15 +1,19 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:field_force_management/constants.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:geocoding/geocoding.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:field_force_management/models/user.dart';
 import 'package:intl/intl.dart';
 import 'package:month_year_picker/month_year_picker.dart';
 import 'package:slide_to_act/slide_to_act.dart';
+// import 'package:http/http.dart' as http;
 
 class Attendancepage extends StatefulWidget {
   const Attendancepage({super.key});
@@ -22,6 +26,7 @@ class _AttendancepageState extends State<Attendancepage>
     with SingleTickerProviderStateMixin {
   String checkin = "--/--";
   String checkout = "--/--";
+  String location = " ";
 
   Future<String?> getCurrentUserEmail() async {
     final User? user = FirebaseAuth.instance.currentUser;
@@ -84,11 +89,21 @@ class _AttendancepageState extends State<Attendancepage>
     }
   }
 
+  // Throws exception as of 08 Oct 2024
+  // void _getLocation() async {
+  //   List<Placemark> placemark =
+  //       await placemarkFromCoordinates(UserModel.lat, UserModel.long);
+  //   setState(() {
+  //     location = "${placemark[0].street}";
+  //   });
+  // }
+
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
     fetchUserName().then((value) => getRecord());
+    // _getLocation();
   }
 
   @override
@@ -257,7 +272,7 @@ class _AttendancepageState extends State<Attendancepage>
                       ),
                       checkout == "--/--"
                           ? Container(
-                              margin: EdgeInsets.only(top: 12),
+                              margin: EdgeInsets.only(top: 20, bottom: 12),
                               child: Builder(builder: (context) {
                                 final GlobalKey<SlideActionState> key =
                                     GlobalKey();
@@ -274,66 +289,138 @@ class _AttendancepageState extends State<Attendancepage>
                                     //     () => key.currentState!.reassemble());
 
                                     // key.currentState!.();
-                                    final querySnapshot =
+                                    if (UserModel.lat != 0) {
+                                      // _getLocation();
+
+                                      final querySnapshot =
+                                          await FirebaseFirestore.instance
+                                              .collection('Employee Attendance')
+                                              .where('email',
+                                                  isEqualTo: UserModel.email)
+                                              .get();
+
+                                      final snap = await FirebaseFirestore
+                                          .instance
+                                          .collection("Employee Attendance")
+                                          .doc(querySnapshot.docs[0].id)
+                                          .collection("Record")
+                                          .doc(DateFormat("dd MMMM yyyy")
+                                              .format(DateTime.now()))
+                                          .get();
+
+                                      if (snap.exists) {
                                         await FirebaseFirestore.instance
-                                            .collection('Employee Attendance')
-                                            .where('email',
-                                                isEqualTo: UserModel.email)
-                                            .get();
+                                            .collection("Employee Attendance")
+                                            .doc(querySnapshot.docs[0].id)
+                                            .collection("Record")
+                                            .doc(DateFormat("dd MMMM yyyy")
+                                                .format(DateTime.now()))
+                                            .update({
+                                          "date": Timestamp.now(),
+                                          "checkout": DateFormat("hh:mm")
+                                              .format(DateTime.now()),
+                                          "location": location
+                                        });
 
-                                    final snap = await FirebaseFirestore
-                                        .instance
-                                        .collection("Employee Attendance")
-                                        .doc(querySnapshot.docs[0].id)
-                                        .collection("Record")
-                                        .doc(DateFormat("dd MMMM yyyy")
-                                            .format(DateTime.now()))
-                                        .get();
+                                        checkout = DateFormat("hh:mm")
+                                            .format(DateTime.now());
+                                      } else {
+                                        await FirebaseFirestore.instance
+                                            .collection("Employee Attendance")
+                                            .doc(querySnapshot.docs[0].id)
+                                            .collection("Record")
+                                            .doc(DateFormat("dd MMMM yyyy")
+                                                .format(DateTime.now()))
+                                            .set({
+                                          "date": Timestamp.now(),
+                                          "checkin": DateFormat("hh:mm")
+                                              .format(DateTime.now()),
+                                          "checkout": "--/--",
+                                          "location" : location
+                                        });
+                                        checkin = DateFormat("hh:mm")
+                                            .format(DateTime.now());
+                                      }
 
-                                    if (snap.exists) {
-                                      await FirebaseFirestore.instance
-                                          .collection("Employee Attendance")
-                                          .doc(querySnapshot.docs[0].id)
-                                          .collection("Record")
-                                          .doc(DateFormat("dd MMMM yyyy")
-                                              .format(DateTime.now()))
-                                          .update({
-                                        "date": Timestamp.now(),
-                                        "checkout": DateFormat("hh:mm")
-                                            .format(DateTime.now()),
-                                      });
-
-                                      checkout = DateFormat("hh:mm")
-                                          .format(DateTime.now());
+                                      setState(() {});
                                     } else {
-                                      await FirebaseFirestore.instance
+                                      Timer(Duration(seconds: 5), () async {
+                                        // _getLocation();
+
+                                      final querySnapshot =
+                                          await FirebaseFirestore.instance
+                                              .collection('Employee Attendance')
+                                              .where('email',
+                                                  isEqualTo: UserModel.email)
+                                              .get();
+
+                                      final snap = await FirebaseFirestore
+                                          .instance
                                           .collection("Employee Attendance")
                                           .doc(querySnapshot.docs[0].id)
                                           .collection("Record")
                                           .doc(DateFormat("dd MMMM yyyy")
                                               .format(DateTime.now()))
-                                          .set({
-                                        "date": Timestamp.now(),
-                                        "checkin": DateFormat("hh:mm")
-                                            .format(DateTime.now()),
-                                        "checkout": "--/--"
-                                      });
-                                      checkin = DateFormat("hh:mm")
-                                          .format(DateTime.now());
-                                    }
+                                          .get();
 
-                                    setState(() {});
+                                      if (snap.exists) {
+                                        await FirebaseFirestore.instance
+                                            .collection("Employee Attendance")
+                                            .doc(querySnapshot.docs[0].id)
+                                            .collection("Record")
+                                            .doc(DateFormat("dd MMMM yyyy")
+                                                .format(DateTime.now()))
+                                            .update({
+                                          "date": Timestamp.now(),
+                                          "checkout": DateFormat("hh:mm")
+                                              .format(DateTime.now()),
+                                          "location": location
+                                        });
+
+                                        checkout = DateFormat("hh:mm")
+                                            .format(DateTime.now());
+                                      } else {
+                                        await FirebaseFirestore.instance
+                                            .collection("Employee Attendance")
+                                            .doc(querySnapshot.docs[0].id)
+                                            .collection("Record")
+                                            .doc(DateFormat("dd MMMM yyyy")
+                                                .format(DateTime.now()))
+                                            .set({
+                                          "date": Timestamp.now(),
+                                          "checkin": DateFormat("hh:mm")
+                                              .format(DateTime.now()),
+                                          "checkout": "--/--",
+                                          "location" : location
+                                        });
+                                        checkin = DateFormat("hh:mm")
+                                            .format(DateTime.now());
+                                      }
+
+                                      setState(() {});
+                                      });
+                                    }
                                   },
                                 );
                               }),
                             )
                           : Container(
-                              margin: EdgeInsets.only(top: 20),
+                              margin: EdgeInsets.only(top: 25, bottom: 12),
                               child: Text(
                                 "Already checked out for today! See you tomorrow",
                                 style: GoogleFonts.poppins(fontSize: 16),
                               ),
                             ),
+                      location != " "
+                          ? Container(
+                              alignment: Alignment.topLeft,
+                              margin: EdgeInsets.only(top: 12),
+                              child: Text("Location" + location,
+                                  style: GoogleFonts.poppins(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.bold)),
+                            )
+                          : SizedBox(),
                     ],
                   ),
                 ),
@@ -385,17 +472,20 @@ class _AttendancepageState extends State<Attendancepage>
                                           ),
                                           textButtonTheme: TextButtonThemeData(
                                             style: TextButton.styleFrom(
-                                              // backgroundColor:
-                                              //     Colors.purple.shade200,
-                                            ),
+                                                // backgroundColor:
+                                                //     Colors.purple.shade200,
+                                                ),
                                           ),
                                           textTheme: TextTheme(
                                             headlineMedium: GoogleFonts.poppins(
-                                                fontSize: 20, fontWeight: FontWeight.normal),
+                                                fontSize: 20,
+                                                fontWeight: FontWeight.normal),
                                             headlineLarge: GoogleFonts.poppins(
-                                                fontSize: 22, fontWeight: FontWeight.bold),
+                                                fontSize: 22,
+                                                fontWeight: FontWeight.bold),
                                             headlineSmall: GoogleFonts.poppins(
-                                                fontSize: 16, fontWeight: FontWeight.bold),
+                                                fontSize: 16,
+                                                fontWeight: FontWeight.bold),
                                           ),
                                         ),
                                       );
@@ -412,7 +502,7 @@ class _AttendancepageState extends State<Attendancepage>
                               child: Text(
                                 "Pick a month here",
                                 style: GoogleFonts.poppins(
-                                  color: Colors.purple.shade200,
+                                    color: Colors.purple.shade200,
                                     fontSize: 18,
                                     fontWeight: FontWeight.normal),
                               ),
@@ -439,7 +529,6 @@ class _AttendancepageState extends State<Attendancepage>
                                   return ListView.builder(
                                       itemCount: snap!.length,
                                       itemBuilder: (context, index) {
-                                        print(_month);
                                         return DateFormat("MMMM").format(
                                                     snap[index]["date"]
                                                         .toDate()) ==

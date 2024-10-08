@@ -3,9 +3,12 @@ import 'package:field_force_management/constants.dart';
 import 'package:field_force_management/models/user.dart';
 import 'package:field_force_management/screens/attendancePage.dart';
 import 'package:field_force_management/screens/login_screen.dart';
+import 'package:field_force_management/services/location_service.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:geocoding/geocoding.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:http/http.dart' as http;
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -30,11 +33,30 @@ class _HomePageState extends State<HomePage> {
     UserModel.id = querySnapshot.docs[0].id;
   }
 
+  void _startLocationService() async {
+    LocationService().initialize();
+
+    LocationService().getLatitude().then((value) {
+      // UserModel.lat = value!;
+      setState(() {
+        UserModel.lat = value!;
+      });
+    });
+
+    LocationService().getLongitude().then((value) {
+      // UserModel.long = value!;
+      setState(() {
+        UserModel.long = value!;
+      });
+    });
+  }
+
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
     getId();
+    _startLocationService();
   }
 
   @override

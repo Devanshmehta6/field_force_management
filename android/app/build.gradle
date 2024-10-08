@@ -10,7 +10,7 @@ plugins {
 
 android {
     namespace = "com.example.field_force_management"
-    compileSdk = flutter.compileSdkVersion
+    compileSdk = 33
     ndkVersion = flutter.ndkVersion
 
     compileOptions {
