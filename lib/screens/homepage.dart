@@ -1,9 +1,11 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:field_force_management/admin%20pages/attendancePage.dart';
 import 'package:field_force_management/constants.dart';
 import 'package:field_force_management/models/user.dart';
 import 'package:field_force_management/screens/attendancePage.dart';
 import 'package:field_force_management/screens/login_screen.dart';
 import 'package:field_force_management/services/location_service.dart';
+import 'package:field_force_management/widgets/drawer.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:geocoding/geocoding.dart';
@@ -30,6 +32,7 @@ class _HomePageState extends State<HomePage> {
         .collection('Employee Attendance')
         .where('email', isEqualTo: email)
         .get();
+
     UserModel.id = querySnapshot.docs[0].id;
   }
 
@@ -67,59 +70,7 @@ class _HomePageState extends State<HomePage> {
         title: Text('HomePage', style: GoogleFonts.poppins(fontSize: 16)),
         backgroundColor: Colors.purple.shade300,
       ),
-      drawer: Drawer(
-        child: ListView(
-          padding: EdgeInsets.zero,
-          children: [
-            DrawerHeader(
-              decoration: BoxDecoration(
-                color: Colors.blue,
-              ),
-              child: const Text(
-                'Drawer Header',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 24,
-                ),
-              ),
-            ),
-            ListTile(
-              leading: Icon(Icons.home),
-              title: Text('Home', style: GoogleFonts.poppins(fontSize: 16)),
-              onTap: () {
-                Navigator.of(context).pushReplacement(
-                  MaterialPageRoute(
-                    builder: (context) => HomePage(),
-                  ),
-                );
-              },
-            ),
-            ListTile(
-              leading: Icon(Icons.logout),
-              title: Text('Log Out', style: GoogleFonts.poppins(fontSize: 16)),
-              onTap: () async {
-                // Handle settings navigation
-                try {
-                  await FirebaseAuth.instance.signOut();
-                  print('User signed out successfully');
-                  Navigator.of(context).pushReplacement(
-                    MaterialPageRoute(
-                      builder: (context) => LoginScreen(),
-                    ),
-                  );
-                } catch (e) {
-                  String error = e.toString();
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(error.substring(error.indexOf(']') + 1)),
-                    ),
-                  );
-                }
-              },
-            ),
-          ],
-        ),
-      ),
+      drawer: DrawerWidget(),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: LayoutBuilder(
@@ -142,13 +93,21 @@ class _HomePageState extends State<HomePage> {
                           page: MaterialPageRoute(
                               builder: (context) => HomePage())),
                       FeatureCard(
-                          icon: Icons.group,
-                          title: 'Attendance',
-                          subtitle:
-                              'Attendance marking with location & track working hours',
-                          buttonLabel: 'Manage →',
-                          page: MaterialPageRoute(
-                              builder: (context) => Attendancepage())),
+                        icon: Icons.group,
+                        title: 'Attendance',
+                        subtitle:
+                            'Attendance marking with location & track working hours',
+                        buttonLabel: 'Manage →',
+                        page: MaterialPageRoute(
+                          builder: (context) {
+                            if(UserModel.role == "Employee"){
+                                return Attendancepage();
+                              } else {
+                                return AdminAttendance();
+                              }
+                          }
+                        ),
+                      ),
                       FeatureCard(
                           icon: Icons.grid_view,
                           title: 'Client Visits',
@@ -191,7 +150,13 @@ class _HomePageState extends State<HomePage> {
                             'Attendance marking with location & track working hours',
                         buttonLabel: 'Manage →',
                         page: MaterialPageRoute(
-                            builder: (context) => Attendancepage()),
+                            builder: (context){
+                              if(UserModel.role == "Employee"){
+                                return Attendancepage();
+                              } else {
+                                return AdminAttendance();
+                              }
+                            }),
                       ),
                       FeatureCard(
                         icon: Icons.grid_view,
@@ -267,7 +232,7 @@ class FeatureCard extends StatelessWidget {
               SizedBox(height: isWeb ? 8 : 2),
               ElevatedButton(
                 onPressed: () {
-                  Navigator.pushReplacement(context, page);
+                  Navigator.push(context, page);
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.purple.shade200,

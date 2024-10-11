@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:field_force_management/constants.dart';
+import 'package:field_force_management/models/user.dart';
 import 'package:field_force_management/screens/homepage.dart';
 import 'package:field_force_management/screens/signup_screen.dart';
 import 'package:field_force_management/widgets/input_field.dart';
@@ -8,6 +9,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -27,7 +29,24 @@ class _LoginScreenState extends State<LoginScreen> {
       UserCredential userCredential = await FirebaseAuth.instance
           .signInWithEmailAndPassword(
               email: emailCont.text.trim(), password: passCont.text.trim());
+      final User? user = FirebaseAuth.instance.currentUser;
+      // print("hello: ${user!.email}");
+      UserModel.email = user!.email.toString();
 
+      final querySnapshot = await FirebaseFirestore.instance
+          .collection('Employee Attendance')
+          .where('email', isEqualTo: UserModel.email)
+          .get();
+      
+
+      final snap = await FirebaseFirestore.instance
+          .collection("Employee Attendance")
+          .doc(querySnapshot.docs[0].id).get();
+          // .collection("Record")
+      UserModel.role = snap["role"];
+      UserModel.username = snap["username"];
+      
+      // print(snap["phone"]);
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(
@@ -101,7 +120,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               padding: EdgeInsets.symmetric(
                                   horizontal: 50, vertical: 20),
                               textStyle: TextStyle(fontSize: 16),
-                              backgroundColor: Colors.blue))
+                              backgroundColor: Colors.purple.shade200))
                     ],
                   ),
                   Row(
