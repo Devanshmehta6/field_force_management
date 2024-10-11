@@ -3,7 +3,9 @@ import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:field_force_management/constants.dart';
 import 'package:field_force_management/models/user.dart';
+// import 'package:field_force_management/widgets/bottom_nav.dart';
 import 'package:field_force_management/widgets/drawer.dart';
+import 'package:field_force_management/widgets/generateReport.dart';
 import 'package:field_force_management/widgets/input_field.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -241,6 +243,26 @@ class _AdminAttendanceState extends State<AdminAttendance>
       body: DefaultTabController(
         length: 2,
         child: Scaffold(
+          floatingActionButton: Container(
+            padding: EdgeInsets.all(6),
+            child: TextButton(
+              style: TextButton.styleFrom(
+                  backgroundColor: Colors.purple.shade200,
+                  foregroundColor: Colors.white),
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => GenerateReports(),
+                  ),
+                );
+              },
+              child: Text(
+                "Generate reports",
+                style: GoogleFonts.poppins(fontSize: 16),
+              ),
+            ),
+          ),
           drawer: DrawerWidget(),
           appBar: AppBar(
             backgroundColor: Colors.purple.shade200,

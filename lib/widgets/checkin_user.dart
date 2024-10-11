@@ -90,7 +90,7 @@ class _CheckinUserState extends State<CheckinUser> {
                         margin: EdgeInsets.only(top: 12),
                         // height: isWeb ? height / 3 : height / 4,
                         child: Text(
-                            DateFormat(" hh:mm:ss a").format(DateTime.now()),
+                            DateFormat(" HH:mm:ss a").format(DateTime.now()),
                             style: GoogleFonts.poppins(
                                 fontSize: 18, fontWeight: FontWeight.normal)),
                       );
@@ -198,12 +198,12 @@ class _CheckinUserState extends State<CheckinUser> {
                                   .update({
                                 "date": Timestamp.now(),
                                 "checkout":
-                                    DateFormat("hh:mm").format(DateTime.now()),
+                                    DateFormat("HH:mm").format(DateTime.now()),
                                 "location": location
                               });
 
                               checkout =
-                                  DateFormat("hh:mm").format(DateTime.now());
+                                  DateFormat("HH:mm").format(DateTime.now());
                             } else {
                               await FirebaseFirestore.instance
                                   .collection("Employee Attendance")
@@ -214,12 +214,12 @@ class _CheckinUserState extends State<CheckinUser> {
                                   .set({
                                 "date": Timestamp.now(),
                                 "checkin":
-                                    DateFormat("hh:mm").format(DateTime.now()),
+                                    DateFormat("HH:mm").format(DateTime.now()),
                                 "checkout": "--/--",
                                 "location": location
                               });
                               checkin =
-                                  DateFormat("hh:mm").format(DateTime.now());
+                                  DateFormat("HH:mm").format(DateTime.now());
                             }
 
                             setState(() {});
@@ -250,13 +250,13 @@ class _CheckinUserState extends State<CheckinUser> {
                                         .format(DateTime.now()))
                                     .update({
                                   "date": Timestamp.now(),
-                                  "checkout": DateFormat("hh:mm")
+                                  "checkout": DateFormat("HH:mm")
                                       .format(DateTime.now()),
                                   "location": location
                                 });
 
                                 checkout =
-                                    DateFormat("hh:mm").format(DateTime.now());
+                                    DateFormat("HH:mm").format(DateTime.now());
                               } else {
                                 await FirebaseFirestore.instance
                                     .collection("Employee Attendance")
@@ -266,13 +266,13 @@ class _CheckinUserState extends State<CheckinUser> {
                                         .format(DateTime.now()))
                                     .set({
                                   "date": Timestamp.now(),
-                                  "checkin": DateFormat("hh:mm")
+                                  "checkin": DateFormat("HH:mm")
                                       .format(DateTime.now()),
                                   "checkout": "--/--",
                                   "location": location
                                 });
                                 checkin =
-                                    DateFormat("hh:mm").format(DateTime.now());
+                                    DateFormat("HH:mm").format(DateTime.now());
                               }
 
                               setState(() {});

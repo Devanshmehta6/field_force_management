@@ -67,8 +67,8 @@ class _HomePageState extends State<HomePage> {
     var width = MediaQuery.of(context).size.width;
     return Scaffold(
       appBar: AppBar(
-        title: Text('HomePage', style: GoogleFonts.poppins(fontSize: 16)),
-        backgroundColor: Colors.purple.shade300,
+        title: Text('Home Page', style: GoogleFonts.poppins(fontSize: 18, fontWeight: FontWeight.bold)),
+        backgroundColor: Colors.purple.shade200,
       ),
       drawer: DrawerWidget(),
       body: Padding(
