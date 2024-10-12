@@ -25,8 +25,12 @@ class _GenerateReportsState extends State<GenerateReports> {
   bool wantsEmployee = false;
 
   List<Map<String, dynamic>> _records = [];
-  Map<String, double> _dayWiseHours = {}; // Day-wise total hours
+  Map<String, double> _dayWiseHours = {};
   Map<int, double> _weeklyHours = {};
+
+  Map<String, Map<int, double>> _employeeWeeklyHours = {};
+  Map<String, Map<int, int>> _employeeDaysWorked = {};
+  Map<String, String> _employeeUsernames = {};
 
   Future<void> _fetchRecords() async {
     try {
@@ -91,32 +95,6 @@ class _GenerateReportsState extends State<GenerateReports> {
   Future<pw.Document> _generatePDF() async {
     final pdf = pw.Document();
 
-    // Day-wise graph
-    final dayWiseGraph = _buildDayWiseGraph();
-
-    // Weekly graph
-    final weeklyGraph = _buildWeeklyGraph();
-
-    List<FlSpot> spots = _dayWiseHours.entries
-        .map((entry) => FlSpot(double.parse(entry.key), entry.value))
-        .toList();
-
-    // pdf.addPage(
-    //   pw.Page(
-    //     build: (context) => pw.Column(
-    //       children: [
-    //         pw.Text('Attendance Report - Previous Month',
-    //             style: pw.TextStyle(fontSize: 24)),
-    //         pw.SizedBox(height: 20),
-    //         pw.Text('Day-wise Total Hours'),
-    //         pw.Container(height: 300, child: dayWiseGraph),
-    //         pw.SizedBox(height: 20),
-    //         pw.Text('Weekly Total Hours'),
-    //         pw.Container(height: 300, child: weeklyGraph),
-    //       ],
-    //     ),
-    //   ),
-    // );
     pdf.addPage(
       pw.Page(
         build: (context) {
@@ -146,67 +124,193 @@ class _GenerateReportsState extends State<GenerateReports> {
     return pdf;
   }
 
-  Widget _buildDayWiseGraph() {
-    List<FlSpot> spots = _dayWiseHours.entries
-        .map((entry) => FlSpot(double.parse(entry.key), entry.value))
-        .toList();
+  void _fetchAllEmployeeRecords() async {
+    DateTime now = DateTime.now();
+    DateTime firstDayOfPrevMonth = DateTime(now.year, now.month - 1, 1);
+    DateTime lastDayOfPrevMonth = DateTime(now.year, now.month, 0);
+
+    try {
+      QuerySnapshot snapshot = await FirebaseFirestore.instance
+          .collection("Employee Attendance")
+          .get();
+
+      for (var employeeDoc in snapshot.docs) {
+        String username = employeeDoc['username'];
+        _employeeUsernames[employeeDoc.id] = username;
+
+        QuerySnapshot recordSnapshot = await FirebaseFirestore.instance
+            .collection("Employee Attendance")
+            .doc(employeeDoc.id)
+            .collection("Record")
+            .where('date', isGreaterThanOrEqualTo: firstDayOfPrevMonth)
+            .where('date', isLessThanOrEqualTo: lastDayOfPrevMonth)
+            .get();
+
+        _processEmployeeRecords(employeeDoc.id, recordSnapshot.docs);
+      }
+
+      setState(() {});
+    } catch (e) {
+      print("Error fetching records: $e");
+    }
+  }
+
+  Map<int, double> _initializeWeeklyHours() {
+    return {1: 0.0, 2: 0.0, 3: 0.0, 4: 0.0};
+  }
+
+  Map<int, int> _initializeWeeklyDays() {
+    return {1: 0, 2: 0, 3: 0, 4: 0};
+  }
+
+  void _processEmployeeRecords(
+      String employeeId, List<QueryDocumentSnapshot> records) {
+    Map<int, double> weeklyHours = _initializeWeeklyHours();
+    Map<int, int> daysWorked = _initializeWeeklyDays();
+
+    for (var record in records) {
+      DateTime date = record['date'].toDate();
+
+      String checkInTime = record["checkin"];
+      List<String> timeParts = checkInTime.split(":");
+      int hours = int.parse(timeParts[0]);
+      int minutes = int.parse(timeParts[1]);
+      double checkInTimeInHours = hours + (minutes / 60);
+
+      String checkoutTime = record["checkout"];
+      List<String> timeParts2 = checkoutTime.split(":");
+      int hours2 = int.parse(timeParts2[0]);
+      int minutes2 = int.parse(timeParts2[1]);
+      double checkOutTimeInHours = hours2 + (minutes2 / 60);
+
+      double totalHours = checkOutTimeInHours - checkInTimeInHours;
+
+      // Calculate week number (1st week, 2nd week, etc.)
+      int weekNumber = ((date.day - 1) ~/ 7) + 1;
+
+      // Add hours and days worked for this employee in the given week
+      weeklyHours[weekNumber] = (weeklyHours[weekNumber] ?? 0) + totalHours;
+      daysWorked[weekNumber] = (daysWorked[weekNumber] ?? 0) + 1;
+    }
+
+    _employeeWeeklyHours[employeeId] = weeklyHours;
+    _employeeDaysWorked[employeeId] = daysWorked;
+
+    print(_employeeWeeklyHours);
+  }
+
+  Widget _buildEmployeeHoursChart(String employeeId) {
+    final weeklyHours = _employeeWeeklyHours[employeeId];
 
     return Container(
-      height: 300, // Set a height for the chart
-      child: LineChart(
-        LineChartData(
+      height: 300,
+      padding: EdgeInsets.all(16),
+      child: BarChart(
+        BarChartData(
+          barTouchData: BarTouchData(
+            touchTooltipData: BarTouchTooltipData(
+              // tooltipBgColor: Colors.blueGrey,
+              getTooltipItem: (group, groupIndex, rod, rodIndex) {
+                String week = 'Week ${group.x.toInt()}';
+                return BarTooltipItem(
+                  '$week\n${rod.toY.toStringAsFixed(1)} hours',
+                  TextStyle(color: Colors.white),
+                );
+              },
+            ),
+          ),
           gridData: FlGridData(show: false),
           titlesData: FlTitlesData(
-            leftTitles: AxisTitles(sideTitles: SideTitles(showTitles: true)),
-            bottomTitles: AxisTitles(sideTitles: SideTitles(showTitles: true)),
-          ),
-          lineBarsData: [
-            LineChartBarData(
-              spots: spots,
-              isCurved: true,
-              color: Colors.blue,
-              belowBarData: BarAreaData(show: false),
+            leftTitles: AxisTitles(
+              sideTitles: SideTitles(showTitles: true, reservedSize: 28),
             ),
-          ],
+            bottomTitles: AxisTitles(
+              sideTitles: SideTitles(
+                showTitles: true,
+                getTitlesWidget: (value, _) {
+                  switch (value.toInt()) {
+                    case 1:
+                      return Text('Week 1');
+                    case 2:
+                      return Text('Week 2');
+                    case 3:
+                      return Text('Week 3');
+                    case 4:
+                      return Text('Week 4');
+                  }
+                  return Text('');
+                },
+              ),
+            ),
+          ),
+          borderData: FlBorderData(show: true),
+          barGroups: weeklyHours!.entries
+              .map((entry) => BarChartGroupData(
+                    x: entry.key,
+                    barRods: [
+                      BarChartRodData(
+                        toY: entry.value,
+                        color: Colors.blue,
+                        width: 20,
+                        borderRadius: BorderRadius.circular(5),
+                      ),
+                    ],
+                  ))
+              .toList(),
         ),
       ),
     );
-    // return LineChart(
-    //   LineChartData(
-    //     lineBarsData: [
-    //       LineChartBarData(
-    //         spots: _dayWiseHours.entries
-    //             .map((entry) => FlSpot(double.parse(entry.key), entry.value))
-    //             .toList(),
-    //         isCurved: true,
-    //         barWidth: 3,
-    //         color: Colors.blue,
-    //       ),
-    //     ],
-    //     titlesData: FlTitlesData(
-    //       leftTitles: AxisTitles(sideTitles: SideTitles(showTitles: true)),
-    //       bottomTitles: AxisTitles(sideTitles: SideTitles(showTitles: true)),
-    //     ),
-    //   ),
-    // );
   }
 
-  Widget _buildWeeklyGraph() {
-    return Container();
-    // return BarChart(
-    //   BarChartData(
-    //     barGroups: _weeklyHours.entries
-    //         .map((entry) => BarChartGroupData(
-    //               x: entry.key,
-    //               barRods: [BarChartRodData(toY: entry.value)],
-    //             ))
-    //         .toList(),
-    //     titlesData: FlTitlesData(
-    //       leftTitles: AxisTitles(sideTitles: SideTitles(showTitles: true)),
-    //       bottomTitles: AxisTitles(sideTitles: SideTitles(showTitles: true)),
-    //     ),
-    //   ),
-    // );
+  Widget _buildEmployeeDaysChart(String employeeId) {
+    final daysWorked = _employeeDaysWorked[employeeId];
+
+    return Container(
+      height: 300,
+      padding: EdgeInsets.all(16),
+      child: BarChart(
+        BarChartData(
+          gridData: FlGridData(show: false),
+          titlesData: FlTitlesData(
+            leftTitles: AxisTitles(
+              sideTitles: SideTitles(showTitles: true, reservedSize: 28),
+            ),
+            bottomTitles: AxisTitles(
+              sideTitles: SideTitles(
+                showTitles: true,
+                getTitlesWidget: (value, _) {
+                  switch (value.toInt()) {
+                    case 1:
+                      return Text('Week 1');
+                    case 2:
+                      return Text('Week 2');
+                    case 3:
+                      return Text('Week 3');
+                    case 4:
+                      return Text('Week 4');
+                  }
+                  return Text('');
+                },
+              ),
+            ),
+          ),
+          borderData: FlBorderData(show: true),
+          barGroups: daysWorked!.entries
+              .map((entry) => BarChartGroupData(
+                    x: entry.key,
+                    barRods: [
+                      BarChartRodData(
+                        toY: entry.value.toDouble(),
+                        color: Colors.green,
+                        width: 20,
+                        borderRadius: BorderRadius.circular(5),
+                      ),
+                    ],
+                  ))
+              .toList(),
+        ),
+      ),
+    );
   }
 
   @override
@@ -255,7 +359,12 @@ class _GenerateReportsState extends State<GenerateReports> {
                     style: TextButton.styleFrom(
                         backgroundColor: Colors.purple.shade200,
                         foregroundColor: Colors.white),
-                    onPressed: () {},
+                    onPressed: () {
+                      _fetchAllEmployeeRecords();
+                      setState(() {
+                        // wantsEmployee = !wantsEmployee;
+                      });
+                    },
                     child: Text(
                       "Everybody",
                       style: GoogleFonts.poppins(fontSize: 16),
@@ -296,7 +405,35 @@ class _GenerateReportsState extends State<GenerateReports> {
                       ),
                     ],
                   )
-                : SizedBox(),
+                : SingleChildScrollView(
+                    child: Column(
+                      children: _employeeWeeklyHours.keys.map((employeeId) {
+                        String username = _employeeUsernames[employeeId] ??
+                            "Unknown Employee";
+
+                        return Column(
+                          children: [
+                            Text(
+                              'Employee: $username',
+                              style: GoogleFonts.poppins(
+                                  fontSize: 18, fontWeight: FontWeight.bold),
+                            ),
+                            SizedBox(height: 20),
+                            Text('Total Hours Worked per Week',
+                                style: GoogleFonts.poppins(fontSize: 16)),
+                            _buildEmployeeHoursChart(employeeId),
+                            SizedBox(height: 20),
+                            Text('Days Worked per Week',
+                                style: GoogleFonts.poppins(
+                                  fontSize: 16,
+                                )),
+                            _buildEmployeeDaysChart(employeeId),
+                            SizedBox(height: 40),
+                          ],
+                        );
+                      }).toList(),
+                    ),
+                  ),
           ],
         ),
       ),
