@@ -98,11 +98,13 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                       SizedBox(height: 25),
                       InputField(
+                        isReadOnly: false,
                           hintText: "Email",
                           controller: emailCont,
                           isPassword: false),
                       SizedBox(height: 25),
                       InputField(
+                        isReadOnly: false,
                         hintText: "Password",
                         controller: passCont,
                         isPassword: true,

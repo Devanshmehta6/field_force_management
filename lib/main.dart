@@ -1,7 +1,11 @@
+import 'package:field_force_management/admin%20pages/client%20visits/schedule_visit.dart';
+import 'package:field_force_management/admin%20pages/client_visits.dart';
 import 'package:field_force_management/firebase_options.dart';
 import 'package:field_force_management/responsive/mobile_screen.dart';
 import 'package:field_force_management/responsive/responsive.dart';
 import 'package:field_force_management/responsive/web_screen.dart';
+import 'package:field_force_management/screens/client_visits.dart';
+import 'package:field_force_management/screens/signup_screen.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:month_year_picker/month_year_picker.dart';
@@ -27,8 +31,10 @@ class MyApp extends StatelessWidget {
         useMaterial3: true,
       ),
       home: Responsive(
-        mobileScreen: MobileScreen(),
-        webScreen: WebScreen(),
+        // mobileScreen: MobileScreen(),
+        // webScreen: WebScreen(),
+        mobileScreen: EmployeeClientVisits(),
+        webScreen: EmployeeClientVisits(),
       ),
       localizationsDelegates: [
         MonthYearPickerLocalizations.delegate

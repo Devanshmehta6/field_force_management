@@ -79,18 +79,21 @@ class _SignUpScreenState extends State<SignUpScreen> {
                       ),
                       SizedBox(height: 25),
                       InputField(
+                        isReadOnly: false,
                         hintText: "Email",
                         controller: emailCont,
                         isPassword: false,
                       ),
                       SizedBox(height: 25),
                       InputField(
+                        isReadOnly: false,
                         hintText: "Password",
                         controller: passCont,
                         isPassword: true,
                       ),
                       SizedBox(height: 25),
                       InputField(
+                        isReadOnly: false,
                         hintText: "UserName",
                         controller: userNameCont,
                         isPassword: false,

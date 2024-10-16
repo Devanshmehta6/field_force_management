@@ -1,11 +1,14 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:field_force_management/admin%20pages/attendancePage.dart';
+import 'package:field_force_management/admin%20pages/client_visits.dart';
 import 'package:field_force_management/constants.dart';
 import 'package:field_force_management/models/user.dart';
 import 'package:field_force_management/screens/attendancePage.dart';
+import 'package:field_force_management/screens/client_visits.dart';
 import 'package:field_force_management/screens/login_screen.dart';
 import 'package:field_force_management/services/location_service.dart';
 import 'package:field_force_management/widgets/drawer.dart';
+import 'package:field_force_management/widgets/feature_card.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:geocoding/geocoding.dart';
@@ -67,7 +70,9 @@ class _HomePageState extends State<HomePage> {
     var width = MediaQuery.of(context).size.width;
     return Scaffold(
       appBar: AppBar(
-        title: Text('Home Page', style: GoogleFonts.poppins(fontSize: 18, fontWeight: FontWeight.bold)),
+        title: Text('Home Page',
+            style:
+                GoogleFonts.poppins(fontSize: 18, fontWeight: FontWeight.bold)),
         backgroundColor: Colors.purple.shade200,
       ),
       drawer: DrawerWidget(),
@@ -98,15 +103,13 @@ class _HomePageState extends State<HomePage> {
                         subtitle:
                             'Attendance marking with location & track working hours',
                         buttonLabel: 'Manage →',
-                        page: MaterialPageRoute(
-                          builder: (context) {
-                            if(UserModel.role == "Employee"){
-                                return Attendancepage();
-                              } else {
-                                return AdminAttendance();
-                              }
+                        page: MaterialPageRoute(builder: (context) {
+                          if (UserModel.role == "Employee") {
+                            return Attendancepage();
+                          } else {
+                            return AdminAttendance();
                           }
-                        ),
+                        }),
                       ),
                       FeatureCard(
                           icon: Icons.grid_view,
@@ -114,8 +117,13 @@ class _HomePageState extends State<HomePage> {
                           subtitle:
                               'Get Geo-verified client visits, photos & forms',
                           buttonLabel: 'Manage →',
-                          page: MaterialPageRoute(
-                              builder: (context) => HomePage())),
+                          page: MaterialPageRoute(builder: (context) {
+                            if (UserModel.role == "Employee") {
+                              return EmployeeClientVisits();
+                            } else {
+                              return AdminClientVisits();
+                            }
+                          })),
                       FeatureCard(
                           icon: Icons.grid_view,
                           title: 'Inventory Manager',
@@ -149,14 +157,13 @@ class _HomePageState extends State<HomePage> {
                         subtitle:
                             'Attendance marking with location & track working hours',
                         buttonLabel: 'Manage →',
-                        page: MaterialPageRoute(
-                            builder: (context){
-                              if(UserModel.role == "Employee"){
-                                return Attendancepage();
-                              } else {
-                                return AdminAttendance();
-                              }
-                            }),
+                        page: MaterialPageRoute(builder: (context) {
+                          if (UserModel.role == "Employee") {
+                            return Attendancepage();
+                          } else {
+                            return AdminAttendance();
+                          }
+                        }),
                       ),
                       FeatureCard(
                         icon: Icons.grid_view,
@@ -164,8 +171,13 @@ class _HomePageState extends State<HomePage> {
                         subtitle:
                             'Get Geo-verified client visits, photos & forms',
                         buttonLabel: 'Manage →',
-                        page:
-                            MaterialPageRoute(builder: (context) => HomePage()),
+                        page: MaterialPageRoute(builder: (context) {
+                          if (UserModel.role == "Employee") {
+                            return EmployeeClientVisits();
+                          } else {
+                            return AdminClientVisits();
+                          }
+                        }),
                       ),
                       FeatureCard(
                         icon: Icons.inventory,
@@ -181,67 +193,6 @@ class _HomePageState extends State<HomePage> {
               );
             }
           },
-        ),
-      ),
-    );
-  }
-}
-
-class FeatureCard extends StatelessWidget {
-  final IconData icon;
-  final String title;
-  final String subtitle;
-  final String buttonLabel;
-  final MaterialPageRoute page;
-  const FeatureCard({
-    required this.icon,
-    required this.title,
-    required this.subtitle,
-    required this.buttonLabel,
-    required this.page,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    double width = MediaQuery.of(context).size.width;
-    double height = MediaQuery.of(context).size.height;
-
-    return Container(
-      height: isWeb ? height / 2.5 : height / 3,
-      width: isWeb ? width / 4 : width / 1.2,
-      child: Card(
-        elevation: 2,
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Icon(
-                icon,
-                size: 48.0,
-                color: Colors.purple.shade200,
-              ),
-              SizedBox(height: isWeb ? 8 : 2),
-              Text(title,
-                  style: GoogleFonts.poppins(
-                      fontSize: 18, fontWeight: FontWeight.bold)),
-              SizedBox(height: isWeb ? 8 : 2),
-              Text(subtitle,
-                  style: GoogleFonts.poppins(
-                      fontSize: 16, fontWeight: FontWeight.normal)),
-              SizedBox(height: isWeb ? 8 : 2),
-              ElevatedButton(
-                onPressed: () {
-                  Navigator.push(context, page);
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.purple.shade200,
-                  foregroundColor: Colors.white,
-                ),
-                child: Text(buttonLabel),
-              ),
-            ],
-          ),
         ),
       ),
     );

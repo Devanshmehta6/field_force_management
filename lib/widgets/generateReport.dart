@@ -362,7 +362,7 @@ class _GenerateReportsState extends State<GenerateReports> {
                     onPressed: () {
                       _fetchAllEmployeeRecords();
                       setState(() {
-                        // wantsEmployee = !wantsEmployee;
+                        wantsEmployee = !wantsEmployee;
                       });
                     },
                     child: Text(
@@ -380,6 +380,7 @@ class _GenerateReportsState extends State<GenerateReports> {
                         margin: EdgeInsets.only(
                             top: 12, left: 12, right: 12, bottom: 12),
                         child: InputField(
+                          isReadOnly: false,
                           hintText: "Enter employee email",
                           controller: employeeEmailCont,
                           isPassword: false,
