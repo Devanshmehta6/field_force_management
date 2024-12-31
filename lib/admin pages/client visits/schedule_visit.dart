@@ -22,19 +22,37 @@ class _ScheduleVisitState extends State<ScheduleVisit> {
 
   Future<void> _fetchCheckedInEmployees() async {
     try {
-      QuerySnapshot snapshot = await FirebaseFirestore.instance
-          .collection("Employee Attendance")
-          .get();
+      String todayDate = DateFormat('dd MMMM yyyy')
+          .format(DateTime.now()); // e.g., "08 Oct 2024"
 
       List<String> checkedInEmployees = [];
 
-      for (var employeeDoc in snapshot.docs) {
-        checkedInEmployees.add(employeeDoc['username']);
+      // Fetch all employee documents
+      QuerySnapshot employeeSnapshot = await FirebaseFirestore.instance
+          .collection("Employee Attendance")
+          .get();
+
+      for (var employeeDoc in employeeSnapshot.docs) {
+        // Access the 'Record' subcollection for each employee document
+        QuerySnapshot recordSnapshot = await FirebaseFirestore.instance
+            .collection("Employee Attendance")
+            .doc(employeeDoc.id)
+            .collection("Record")
+            .get();
+
+        for (var recordDoc in recordSnapshot.docs) {
+          if (recordDoc.id == todayDate) {
+            // Add the username to the list if today's record exists
+            checkedInEmployees.add(employeeDoc['username']);
+          }
+        }
       }
-      // print(checkedInEmployees);
+
+      // Update the state with the list of checked-in employees
       setState(() {
         _checkedInEmployees = checkedInEmployees;
       });
+      print(_checkedInEmployees);
     } catch (e) {
       print("Error fetching checked-in employees: $e");
     }
@@ -206,6 +224,7 @@ class _ScheduleVisitState extends State<ScheduleVisit> {
                           _timeController.clear();
                           _employeeController.clear();
                           _locationController.clear();
+                          _selectedEmployee = "";
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
                               content: Text(

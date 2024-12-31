@@ -240,25 +240,33 @@ class _EmployeeClientVisitsState extends State<EmployeeClientVisits> {
                                                     fontSize: 16,
                                                     fontWeight:
                                                         FontWeight.bold)),
-                                            subtitle: Text(
-                                              'Visited on: ${_dateFormatter.format(formatted_datetime)}',
-                                              style: GoogleFonts.poppins(
-                                                  fontSize: 16,
-                                                  color: Colors.grey.shade700),
+                                            subtitle: Column(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.start,
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
+                                              children: [
+                                                Text(
+                                                  'Visit Date: ${_dateFormatter.format(formatted_datetime)}',
+                                                  style: GoogleFonts.poppins(
+                                                      fontSize: 16,
+                                                      color:
+                                                          Colors.grey.shade700),
+                                                ),
+                                                Text(
+                                                  'Visit Location: ${snap[index]['location']}',
+                                                  style: GoogleFonts.poppins(
+                                                      fontSize: 16,
+                                                      color:
+                                                          Colors.grey.shade700),
+                                                ),
+                                                // SizedBox(height: 5),
+                                              ],
                                             ),
                                             trailing: Icon(Icons.person,
-                                                color: Colors.blue, size: 30.0),
+                                                color: Colors.blue, size: 100.0),
                                           ),
                                           SizedBox(height: 10),
-                                          Text('Visit Location:',
-                                              style: GoogleFonts.poppins(
-                                                  fontSize: 16,
-                                                  fontWeight: FontWeight.bold)),
-                                          SizedBox(height: 5),
-                                          Text(snap[index]['location'],
-                                              style: GoogleFonts.poppins(
-                                                  fontSize: 16,
-                                                  color: Colors.grey.shade700)),
                                           SizedBox(height: 10),
                                         ],
                                       ),
