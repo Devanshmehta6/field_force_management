@@ -1,3 +1,4 @@
+import 'package:field_force_management/screens/client_visits.dart';
 import 'package:flutter/cupertino.dart';
 
 class PreviousMeetings extends StatefulWidget {
@@ -10,6 +11,6 @@ class PreviousMeetings extends StatefulWidget {
 class _PreviousMeetingsState extends State<PreviousMeetings> {
   @override
   Widget build(BuildContext context) {
-    return const Placeholder();
+    return EmployeeClientVisits();
   }
 }

@@ -32,10 +32,10 @@ class MyApp extends StatelessWidget {
         useMaterial3: true,
       ),
       home: Responsive(
-        // mobileScreen: MobileScreen(),
-        // webScreen: WebScreen(),
-        mobileScreen: EmployeeHistory(),
-        webScreen: EmployeeHistory(),
+        mobileScreen: MobileScreen(),
+        webScreen: WebScreen(),
+        // mobileScreen: EmployeeHistory(),
+        // webScreen: EmployeeHistory(),
       ),
       localizationsDelegates: [
         MonthYearPickerLocalizations.delegate
