@@ -1,3 +1,4 @@
+import 'package:field_force_management/admin%20pages/client%20visits/employee_history.dart';
 import 'package:field_force_management/admin%20pages/client%20visits/schedule_visit.dart';
 import 'package:field_force_management/admin%20pages/client_visits.dart';
 import 'package:field_force_management/firebase_options.dart';
@@ -33,8 +34,8 @@ class MyApp extends StatelessWidget {
       home: Responsive(
         // mobileScreen: MobileScreen(),
         // webScreen: WebScreen(),
-        mobileScreen: EmployeeClientVisits(),
-        webScreen: EmployeeClientVisits(),
+        mobileScreen: EmployeeHistory(),
+        webScreen: EmployeeHistory(),
       ),
       localizationsDelegates: [
         MonthYearPickerLocalizations.delegate
