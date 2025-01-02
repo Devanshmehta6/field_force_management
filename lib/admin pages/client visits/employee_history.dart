@@ -129,7 +129,9 @@ class _EmployeeHistoryState extends State<EmployeeHistory> {
                   itemBuilder: (context, index) {
                     final employee = _employees[index];
                     return ListTile(
-                      title: Text(employee['username'] ?? "No Name"),
+                      title: Text(employee['username'] ?? "No Name",
+                          style: GoogleFonts.poppins(
+                              fontSize: 16, fontWeight: FontWeight.normal)),
                       onTap: () {
                         setState(() {
                           _selectedEmployee = employee['username'];
@@ -169,20 +171,14 @@ class _EmployeeHistoryState extends State<EmployeeHistory> {
                                 color: Colors.white,
                               ),
                             ),
-                            title: Text(
-                              visit['name'] ?? "No Name",
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 16,
-                              ),
-                            ),
-                            subtitle: Text(
-                              "Date: ${formattedDate}",
-                              style: TextStyle(
-                                color: Colors.grey[600],
-                                fontSize: 14,
-                              ),
-                            ),
+                            title: Text(visit['name'] ?? "No Name",
+                                style: GoogleFonts.poppins(
+                                    fontSize: 16, fontWeight: FontWeight.bold)),
+                            subtitle: Text("Date: ${formattedDate}",
+                                style: GoogleFonts.poppins(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.normal,
+                                    color: Colors.grey.shade200)),
                             trailing: Icon(
                               Icons.arrow_forward_ios,
                               size: 16,
@@ -214,7 +210,8 @@ class EmployeeSearchDelegate extends SearchDelegate<String> {
   final List<Map<String, dynamic>> employees;
   final void Function(String) onEmployeeSelected;
 
-  EmployeeSearchDelegate({required this.employees, required this.onEmployeeSelected});
+  EmployeeSearchDelegate(
+      {required this.employees, required this.onEmployeeSelected});
 
   @override
   List<Widget> buildActions(BuildContext context) {
@@ -252,7 +249,9 @@ class EmployeeSearchDelegate extends SearchDelegate<String> {
       itemBuilder: (context, index) {
         final employee = results[index];
         return ListTile(
-          title: Text(employee['username'] ?? "No Name"),
+          title: Text(employee['username'] ?? "No Name",
+              style: GoogleFonts.poppins(
+                  fontSize: 16, fontWeight: FontWeight.normal)),
           onTap: () {
             onEmployeeSelected(employee['username']);
             close(context, employee['username']);
@@ -276,7 +275,9 @@ class EmployeeSearchDelegate extends SearchDelegate<String> {
       itemBuilder: (context, index) {
         final employee = suggestions[index];
         return ListTile(
-          title: Text(employee['username'] ?? "No Name"),
+          title: Text(employee['username'] ?? "No Name",
+              style: GoogleFonts.poppins(
+                  fontSize: 16, fontWeight: FontWeight.normal)),
           onTap: () {
             query = employee['username'];
             showResults(context);

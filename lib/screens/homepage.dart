@@ -3,6 +3,7 @@ import 'package:field_force_management/admin%20pages/attendancePage.dart';
 import 'package:field_force_management/admin%20pages/client_visits.dart';
 import 'package:field_force_management/constants.dart';
 import 'package:field_force_management/models/user.dart';
+import 'package:field_force_management/screens/Inventory%20Manager/inventoryManager.dart';
 import 'package:field_force_management/screens/attendancePage.dart';
 import 'package:field_force_management/screens/client_visits.dart';
 import 'package:field_force_management/screens/login_screen.dart';
@@ -125,13 +126,14 @@ class _HomePageState extends State<HomePage> {
                             }
                           })),
                       FeatureCard(
-                          icon: Icons.grid_view,
-                          title: 'Inventory Manager',
-                          subtitle:
-                              'Manage your inventory across all the stores',
-                          buttonLabel: 'Manage →',
-                          page: MaterialPageRoute(
-                              builder: (context) => HomePage())),
+                        icon: Icons.grid_view,
+                        title: 'Inventory Manager',
+                        subtitle: 'Manage your inventory across all the stores',
+                        buttonLabel: 'Manage →',
+                        page: MaterialPageRoute(
+                          builder: (context) => InventoryManager(),
+                        ),
+                      ),
                     ],
                   ),
                 ),
