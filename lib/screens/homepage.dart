@@ -7,6 +7,7 @@ import 'package:field_force_management/screens/Inventory%20Manager/inventoryMana
 import 'package:field_force_management/screens/attendancePage.dart';
 import 'package:field_force_management/screens/client_visits.dart';
 import 'package:field_force_management/screens/login_screen.dart';
+import 'package:field_force_management/screens/products.dart';
 import 'package:field_force_management/services/location_service.dart';
 import 'package:field_force_management/widgets/drawer.dart';
 import 'package:field_force_management/widgets/feature_card.dart';
@@ -91,13 +92,14 @@ class _HomePageState extends State<HomePage> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       FeatureCard(
-                          icon: Icons.location_on,
-                          title: 'Location Tracking',
-                          subtitle:
-                              'Check the real-time location of your field employees',
-                          buttonLabel: 'Manage →',
-                          page: MaterialPageRoute(
-                              builder: (context) => HomePage())),
+                        icon: Icons.location_on,
+                        title: 'Products',
+                        subtitle: 'Go through your products',
+                        buttonLabel: 'Manage →',
+                        page: MaterialPageRoute(
+                          builder: (context) => ProductsScreen(),
+                        ),
+                      ),
                       FeatureCard(
                         icon: Icons.group,
                         title: 'Attendance',
@@ -146,13 +148,14 @@ class _HomePageState extends State<HomePage> {
                   child: Column(
                     children: [
                       FeatureCard(
-                          icon: Icons.location_on,
-                          title: 'Location Tracking',
-                          subtitle:
-                              'Check the real-time location of your field employees',
-                          buttonLabel: 'Manage →',
-                          page: MaterialPageRoute(
-                              builder: (context) => HomePage())),
+                        icon: Icons.location_on,
+                        title: 'Products',
+                        subtitle: 'Go through your products',
+                        buttonLabel: 'Manage →',
+                        page: MaterialPageRoute(
+                          builder: (context) => ProductsScreen(),
+                        ),
+                      ),
                       FeatureCard(
                         icon: Icons.group,
                         title: 'Attendance',

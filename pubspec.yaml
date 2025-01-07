@@ -48,6 +48,9 @@ dependencies:
   pdf: ^3.11.1
   printing: ^5.13.3
   fl_chart: ^0.69.0
+  image_picker: ^1.1.2
+  firebase_storage: ^12.3.7
+  cached_network_image: ^3.4.1
 
 
 dev_dependencies:

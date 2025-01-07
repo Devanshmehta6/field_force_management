@@ -7,6 +7,7 @@ import 'package:field_force_management/responsive/responsive.dart';
 import 'package:field_force_management/responsive/web_screen.dart';
 import 'package:field_force_management/screens/Inventory%20Manager/inventoryManager.dart';
 import 'package:field_force_management/screens/client_visits.dart';
+import 'package:field_force_management/screens/products.dart';
 import 'package:field_force_management/screens/signup_screen.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
@@ -35,8 +36,8 @@ class MyApp extends StatelessWidget {
       home: Responsive(
         // mobileScreen: MobileScreen(),
         // webScreen: WebScreen(),
-        mobileScreen: InventoryManager(),
-        webScreen: InventoryManager(),
+        mobileScreen: ProductsScreen(),
+        webScreen: ProductsScreen(),
       ),
       localizationsDelegates: [
         MonthYearPickerLocalizations.delegate

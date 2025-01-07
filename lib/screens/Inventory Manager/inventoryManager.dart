@@ -1,3 +1,4 @@
+import 'package:field_force_management/widgets/dialogBox.dart';
 import 'package:field_force_management/widgets/drawer.dart';
 import 'package:field_force_management/widgets/input_field.dart';
 import 'package:flutter/cupertino.dart';
@@ -117,19 +118,42 @@ class _InventoryManagerState extends State<InventoryManager> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            "Active Inventories",
-            style:
-                GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.bold),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Container(
+                padding: EdgeInsets.only(left: 10),
+                child: Text(
+                  "Active Inventories",
+                  style: GoogleFonts.poppins(
+                      fontSize: 16, fontWeight: FontWeight.bold),
+                ),
+              ),
+              ElevatedButton(
+                onPressed: () {
+                  showDialog(
+                      context: context, builder: (context) => DialogBox());
+                },
+                style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.purple.shade200),
+                child: Text(
+                  "Add New",
+                  style: GoogleFonts.poppins(
+                      fontSize: 16,
+                      fontWeight: FontWeight.normal,
+                      color: Colors.white),
+                ),
+              ),
+            ],
           ),
           const SizedBox(height: 16.0),
           Expanded(
             child: ListView(
               children: [
-                _buildTableRow("Netflix SEO", "Emp", "Active"),
-                _buildTableRow("Google Design", "Devansh", "Completed"),
-                _buildTableRow("Xiaomi Branding", "Admin", "Pending"),
-                _buildTableRow("Microsoft Edge", "Emp", "Completed"),
+                buildTableRow("Netflix SEO", "Emp", "Active"),
+                buildTableRow("Google Design", "Devansh", "Completed"),
+                buildTableRow("Xiaomi Branding", "Admin", "Pending"),
+                buildTableRow("Microsoft Edge", "Emp", "Completed"),
               ],
             ),
           ),
@@ -138,7 +162,7 @@ class _InventoryManagerState extends State<InventoryManager> {
     );
   }
 
-  Widget _buildTableRow(
+  Widget buildTableRow(
       String storeName, String employeeAssigned, String status) {
     return Card(
       margin: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -279,7 +303,10 @@ class _InventoryManagerState extends State<InventoryManager> {
                                 fontWeight: FontWeight.normal,
                               ),
                             ),
-                            leading: Icon(Icons.assignment, color: Colors.purple.shade200,),
+                            leading: Icon(
+                              Icons.assignment,
+                              color: Colors.purple.shade200,
+                            ),
                             trailing: IconButton(
                               icon: const Icon(Icons.delete, color: Colors.red),
                               onPressed: () {
