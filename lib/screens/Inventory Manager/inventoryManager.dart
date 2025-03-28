@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:field_force_management/widgets/dialogBox.dart';
 import 'package:field_force_management/widgets/drawer.dart';
 import 'package:field_force_management/widgets/input_field.dart';
@@ -13,6 +14,134 @@ class InventoryManager extends StatefulWidget {
 }
 
 class _InventoryManagerState extends State<InventoryManager> {
+  late Stream<List<Map<String, dynamic>>> inventoriesStream;
+
+  @override
+  void initState() {
+    super.initState();
+    inventoriesStream = fetchInventories();
+  }
+
+  Stream<List<Map<String, dynamic>>> fetchInventories() {
+    return FirebaseFirestore.instance
+        .collection('Inventories') // The 'inventory' collection in Firestore
+        .snapshots()
+        .map((snapshot) => snapshot.docs.map((doc) {
+              final data = doc.data();
+              print(doc.id);
+              return {
+                'doc_id' : doc.id,
+                'shopName': data['shop_name'] ?? '',
+                'products': data['products'] ?? [],
+                'employee_assigned':
+                    data['employee_assigned'] ?? '', // Default status
+              };
+            }).toList());
+  }
+
+  void _showSlidingWidget(
+    BuildContext context,
+    List products,
+    String emp,
+    // VoidCallback onSave,
+    String id
+  ) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (BuildContext context) {
+        print(id);
+        return StatefulBuilder(
+          builder: (BuildContext context, StateSetter setModalState) {
+            return ClipRRect(
+              borderRadius:
+                  const BorderRadius.vertical(top: Radius.circular(20)),
+              child: Container(
+                color: Colors.white,
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      width: 40,
+                      height: 4,
+                      margin: const EdgeInsets.only(bottom: 10),
+                      decoration: BoxDecoration(
+                        color: Colors.grey[300],
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    ),
+                    Text(
+                      emp,
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    ListView.builder(
+                      shrinkWrap: true,
+                      itemCount: products.length,
+                      itemBuilder: (context, index) {
+                        final product = products[index];
+                        return ListTile(
+                          title: Text("Name: ${product["productName"]}"),
+                          subtitle: Row(
+                            children: [
+                              Text("Quantity: "),
+                              Expanded(
+                                child: TextField(
+                                  controller: TextEditingController(
+                                      text: product["quantity"].toString()),
+                                  keyboardType: TextInputType.number,
+                                  onChanged: (value) {
+                                    setModalState(() {
+                                      // Update the quantity for the product
+                                      products[index]["quantity"] =
+                                          int.tryParse(value) ?? 0;
+                                    });
+                                  },
+                                  decoration: const InputDecoration(
+                                    border: OutlineInputBorder(),
+                                    contentPadding: EdgeInsets.all(8.0),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                      },
+                    ),
+                    const SizedBox(height: 10),
+                    ElevatedButton(
+                      onPressed: () async {
+                        
+
+                        // Call the onSave callback
+                        Navigator.pop(context); // Close the bottom sheet
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.purple.shade200,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                      ),
+                      child: const Text(
+                        "Save Changes",
+                        style: TextStyle(color: Colors.white),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     var height = MediaQuery.of(context).size.height;
@@ -118,24 +247,26 @@ class _InventoryManagerState extends State<InventoryManager> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // Heading and Add New Button
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Container(
-                padding: EdgeInsets.only(left: 10),
-                child: Text(
-                  "Active Inventories",
-                  style: GoogleFonts.poppins(
-                      fontSize: 16, fontWeight: FontWeight.bold),
-                ),
+              Text(
+                "Active Inventories",
+                style: GoogleFonts.poppins(
+                    fontSize: 18, fontWeight: FontWeight.bold),
               ),
               ElevatedButton(
                 onPressed: () {
+                  // Add logic to open the dialog box for adding new inventories
                   showDialog(
-                      context: context, builder: (context) => DialogBox());
+                    context: context,
+                    builder: (context) => DialogBox(), // Your dialog widget
+                  );
                 },
                 style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.purple.shade200),
+                  backgroundColor: Colors.purple.shade200,
+                ),
                 child: Text(
                   "Add New",
                   style: GoogleFonts.poppins(
@@ -147,14 +278,46 @@ class _InventoryManagerState extends State<InventoryManager> {
             ],
           ),
           const SizedBox(height: 16.0),
+
+          // Active Inventories List
           Expanded(
-            child: ListView(
-              children: [
-                buildTableRow("Netflix SEO", "Emp", "Active"),
-                buildTableRow("Google Design", "Devansh", "Completed"),
-                buildTableRow("Xiaomi Branding", "Admin", "Pending"),
-                buildTableRow("Microsoft Edge", "Emp", "Completed"),
-              ],
+            child: StreamBuilder<List<Map<String, dynamic>>>(
+              stream: inventoriesStream,
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return Center(
+                    child: CircularProgressIndicator(),
+                  );
+                }
+                if (snapshot.hasError) {
+                  return Center(
+                    child: Text('Error fetching inventories'),
+                  );
+                }
+
+                final inventories = snapshot.data ?? [];
+
+                if (inventories.isEmpty) {
+                  return Center(
+                    child: Text(
+                      "No active inventories found.",
+                      style: GoogleFonts.poppins(
+                          fontSize: 16, fontWeight: FontWeight.normal),
+                    ),
+                  );
+                }
+
+                return ListView(
+                  children: inventories
+                      .map((inventory) => buildTableRow(
+                          inventory['shopName'],
+                          inventory['products'],
+                          inventory['employee_assigned'],
+                          inventory['doc_id']
+                          ))
+                      .toList(),
+                );
+              },
             ),
           ),
         ],
@@ -162,8 +325,8 @@ class _InventoryManagerState extends State<InventoryManager> {
     );
   }
 
-  Widget buildTableRow(
-      String storeName, String employeeAssigned, String status) {
+// Widget buildTableRow(
+  Widget buildTableRow(String shopName, List products, String emp, String id) {
     return Card(
       margin: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       elevation: 4,
@@ -175,33 +338,27 @@ class _InventoryManagerState extends State<InventoryManager> {
         leading: CircleAvatar(
           backgroundColor: Colors.purple.shade200,
           child: Icon(
-            Icons.person,
+            Icons.store,
             color: Colors.white,
           ),
         ),
-        title: Text(storeName,
+        title: Text(shopName,
             style:
                 GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.bold)),
-        subtitle: Row(
+        subtitle: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              employeeAssigned,
+              "Products: ${products.length}",
               style: GoogleFonts.poppins(
-                  fontSize: 16,
+                  fontSize: 14,
                   fontWeight: FontWeight.normal,
                   color: Colors.grey.shade600),
             ),
             Text(
-              " - ",
+              "Incharge: ${emp}",
               style: GoogleFonts.poppins(
-                  fontSize: 16,
-                  fontWeight: FontWeight.normal,
-                  color: Colors.grey.shade600),
-            ),
-            Text(
-              status,
-              style: GoogleFonts.poppins(
-                  fontSize: 16,
+                  fontSize: 14,
                   fontWeight: FontWeight.normal,
                   color: Colors.grey.shade600),
             ),
@@ -214,6 +371,7 @@ class _InventoryManagerState extends State<InventoryManager> {
         ),
         onTap: () {
           // Define what happens when a tile is tapped
+          _showSlidingWidget(context, products, emp, id);
         },
       ),
     );

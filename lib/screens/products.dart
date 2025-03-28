@@ -1,6 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:field_force_management/constants.dart';
-import 'package:field_force_management/screens/addProductScreen.dart';
 import 'package:field_force_management/widgets/drawer.dart';
 import 'package:field_force_management/widgets/input_field.dart';
 import 'package:flutter/material.dart';
@@ -64,12 +63,6 @@ class _ProductsScreenState extends State<ProductsScreen> {
       });
 
       // Show success message
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Product added successfully',
-              style: GoogleFonts.poppins(fontSize: 16, color: Colors.black)),
-        ),
-      );
     } catch (e) {
       // Show error message
       ScaffoldMessenger.of(context).showSnackBar(

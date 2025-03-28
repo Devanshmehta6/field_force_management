@@ -178,7 +178,7 @@ class _EmployeeHistoryState extends State<EmployeeHistory> {
                                 style: GoogleFonts.poppins(
                                     fontSize: 14,
                                     fontWeight: FontWeight.normal,
-                                    color: Colors.grey.shade200)),
+                                    color: Colors.black)),
                             trailing: Icon(
                               Icons.arrow_forward_ios,
                               size: 16,

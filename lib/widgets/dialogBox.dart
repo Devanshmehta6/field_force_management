@@ -1,8 +1,10 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:field_force_management/screens/Inventory%20Manager/inventoryManager.dart';
 import 'package:field_force_management/widgets/input_field.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:intl/intl.dart';
 
 class DialogBox extends StatefulWidget {
   const DialogBox({super.key});
@@ -13,22 +15,111 @@ class DialogBox extends StatefulWidget {
 
 class _DialogBoxState extends State<DialogBox> {
   final TextEditingController _shopNameController = TextEditingController();
-  final TextEditingController _productsController = TextEditingController();
-  final TextEditingController _quantityController = TextEditingController();
-  String? _paymentType = "Cash";
+  final TextEditingController _contactController = TextEditingController();
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final List<String> items = ['Cash', 'Card'];
+  String selectedValue = 'Cash';
 
-  final List<String> _allProducts = [
-    "Product 1",
-    "Product 2",
-    "Product 3",
-    "Product 4"
-  ];
-  List<String> _selectedProducts = [];
-  List<int> _selectedQuantities = [];
+  List<Map<String, dynamic>> products = [];
+  Map<String, String> quantities = {};
+
+  List<String> _checkedInEmployees = [];
+  String? _selectedEmployee;
+
+  Future<void> _fetchCheckedInEmployees() async {
+    try {
+      String todayDate = DateFormat('dd MMMM yyyy')
+          .format(DateTime.now()); // e.g., "08 Oct 2024"
+
+      List<String> checkedInEmployees = [];
+
+      // Fetch all employee documents
+      QuerySnapshot employeeSnapshot = await FirebaseFirestore.instance
+          .collection("Employee Attendance")
+          .get();
+
+      for (var employeeDoc in employeeSnapshot.docs) {
+        // Access the 'Record' subcollection for each employee document
+        QuerySnapshot recordSnapshot = await FirebaseFirestore.instance
+            .collection("Employee Attendance")
+            .doc(employeeDoc.id)
+            .collection("Record")
+            .get();
+        checkedInEmployees.add(employeeDoc['username']);
+      }
+      setState(() {
+        _checkedInEmployees = checkedInEmployees;
+      });
+      print(_checkedInEmployees);
+    } catch (e) {
+      print("Error fetching checked-in employees: $e");
+    }
+  }
+
+  Future<void> fetchProducts() async {
+    try {
+      // Fetch products from Firestore collection "products"
+      final querySnapshot =
+          await FirebaseFirestore.instance.collection('products').get();
+      setState(() {
+        products = querySnapshot.docs
+            .map((doc) => {'id': doc.id, 'name': doc['name']})
+            .toList();
+      });
+    } catch (e) {
+      print('Error fetching products: $e');
+    }
+  }
+
+  Future<void> _saveInventory() async {
+    if (_shopNameController.text.isEmpty ||
+        _contactController.text.isEmpty ||
+        selectedValue.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please fill in all fields'),
+        ),
+      );
+      return;
+    }
+    try {
+      List<Map<String, dynamic>> inventoryToSave = [];
+
+      quantities.forEach((productId, quantity) {
+        if (quantity.isNotEmpty && int.parse(quantity) > 0) {
+          final product = products.firstWhere((p) => p['id'] == productId);
+          inventoryToSave.add({
+            // 'productId': productId,
+            'productName': product['name'],
+            'quantity': int.parse(quantity),
+          });
+        }
+      });
+
+      await _firestore.collection('Inventories').add({
+        'shop_name': _shopNameController.text,
+        'contact_no': _contactController.text,
+        'products': inventoryToSave,
+        'employee_assigned' : _selectedEmployee
+      });
+    } catch (e) {
+      // Show error message
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Error adding inventory: $e',
+            style: GoogleFonts.poppins(fontSize: 16),
+          ),
+        ),
+      );
+    }
+  }
 
   @override
   void initState() {
     super.initState();
+    fetchProducts();
+    _fetchCheckedInEmployees();
   }
 
   @override
@@ -57,6 +148,7 @@ class _DialogBoxState extends State<DialogBox> {
 
             // Shop Name Field
             TextField(
+              style: GoogleFonts.poppins(fontSize: 16),
               controller: _shopNameController,
               decoration: InputDecoration(
                 labelStyle: GoogleFonts.poppins(
@@ -71,168 +163,127 @@ class _DialogBoxState extends State<DialogBox> {
             Expanded(
               child: ListView.builder(
                 shrinkWrap: true,
-                itemCount: _allProducts.length,
+                itemCount: products.length,
                 itemBuilder: (context, index) {
-                  final product = _allProducts[index];
-                  
-                  // Check if product is selected, default quantity is 0 if not
-                  final currentQuantity = _selectedProducts.contains(product)
-                      ? _selectedQuantities[_selectedProducts.indexOf(product)]
-                      : 0;
-
-                  return ListTile(
-                    title: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  final product = products[index];
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 8.0),
+                    child: Row(
                       children: [
-                        Text(
-                          product,
-                          style: GoogleFonts.poppins(fontSize: 14),
+                        Expanded(
+                          flex: 2,
+                          child: Container(
+                            padding: EdgeInsets.only(left: 12),
+                            child: Text(product['name'],
+                                style: GoogleFonts.poppins(fontSize: 16)),
+                          ),
                         ),
-                        // InputField(
-                        //   isPassword: false,
-                        //   isReadOnly: false,
-                        //   // controller: ,
-                        //   hintText: "0",
-                        // ),
-                        // Quantity TextField
-                        // InputField(
-                        //     hintText: "Quantity",
-                        //     controller: TextEditingController(
-                        //       text: currentQuantity > 0
-                        //           ? currentQuantity.toString()
-                        //           : '',
-                        //     ),
-                        //     isPassword: false,
-                        //     isReadOnly: false)
-                        // SizedBox(
-                        //   width: 100,
-                        //   child: TextField(
-                        //     keyboardType: TextInputType.number,
-                        //     decoration: InputDecoration(
-                        //       border: OutlineInputBorder(),
-                        //       contentPadding:
-                        //           EdgeInsets.symmetric(vertical: 4.0),
-                        //     ),
-                        //     controller: TextEditingController(
-                        //       text: currentQuantity > 0
-                        //           ? currentQuantity.toString()
-                        //           : '',
-                        //     ),
-                        //     onChanged: (value) {
-                        //       setState(() {
-                        //         int quantity = int.tryParse(value) ?? 0;
-                        //         if (quantity > 0) {
-                        //           // Add or update the product and its quantity
-                        //           if (!_selectedProducts.contains(product)) {
-                        //             _selectedProducts.add(product);
-                        //             _selectedQuantities.add(quantity);
-                        //           } else {
-                        //             _selectedQuantities[_selectedProducts
-                        //                 .indexOf(product)] = quantity;
-                        //           }
-                        //         } else {
-                        //           // Remove the product if quantity is 0
-                        //           _selectedProducts.remove(product);
-                        //           _selectedQuantities.removeAt(
-                        //               _selectedProducts.indexOf(product));
-                        //         }
-                        //       });
-                        //     },
-                        //   ),
-                        // ),
+                        SizedBox(width: 4),
+                        Expanded(
+                          flex: 1,
+                          child: TextFormField(
+                            decoration: InputDecoration(
+                              labelStyle: GoogleFonts.poppins(
+                                  fontSize: 16, fontWeight: FontWeight.normal),
+                              labelText: "Quantity",
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(8.0),
+                              ),
+                            ),
+                            style: GoogleFonts.poppins(fontSize: 16),
+                            keyboardType: TextInputType.number,
+                            onChanged: (value) {
+                              setState(() {
+                                quantities[product['id']] = value;
+                              });
+                            },
+                          ),
+                        ),
                       ],
                     ),
                   );
                 },
               ),
             ),
-
+            SizedBox(height: 12.0),
+            TextField(
+              keyboardType: TextInputType.phone,
+              maxLength: 10,
+              
+              style: GoogleFonts.poppins(fontSize: 16),
+              controller: _contactController,
+              decoration: InputDecoration(
+                labelStyle: GoogleFonts.poppins(
+                    fontSize: 16, fontWeight: FontWeight.normal),
+                labelText: "Contact Number",
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8.0),
+                ),
+              ),
+            ),
             SizedBox(height: 16.0),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Container(
+                  padding: EdgeInsets.only(left: 12),
+                  child: DropdownButton<String>(
+                    // Dropdown items
+                    items: items.map((item) {
+                      return DropdownMenuItem<String>(
+                        value: item,
+                        child: Text(
+                          item,
+                          style: GoogleFonts.poppins(fontSize: 14),
+                        ),
+                      );
+                    }).toList(),
 
-            // Quantity Input for Selected Products
-            // if (_selectedProducts.isNotEmpty)
-            //   Column(
-            //     crossAxisAlignment: CrossAxisAlignment.start,
-            //     children: [
-            //       Text(
-            //         "Enter Quantities:",
-            //         style: GoogleFonts.poppins(
-            //             fontSize: 14, fontWeight: FontWeight.bold),
-            //       ),
-            //       const SizedBox(height: 8.0),
-            //       ..._selectedProducts.map((product) {
-            //         return Padding(
-            //           padding: const EdgeInsets.symmetric(vertical: 8.0),
-            //           child: Row(
-            //             children: [
-            //               Expanded(
-            //                 child: Text(
-            //                   product,
-            //                   style: GoogleFonts.poppins(fontSize: 14),
-            //                 ),
-            //               ),
-            //               const SizedBox(width: 16.0),
-            //               Expanded(
-            //                 child: TextField(
-            //                   controller: _quantityControllers[product],
-            //                   keyboardType: TextInputType.number,
-            //                   decoration: InputDecoration(
-            //                     labelText: "Quantity",
-            //                     labelStyle: GoogleFonts.poppins(fontSize: 14),
-            //                     border: OutlineInputBorder(
-            //                       borderRadius: BorderRadius.circular(8.0),
-            //                     ),
-            //                   ),
-            //                 ),
-            //               ),
-            //             ],
-            //           ),
-            //         );
-            //       }).toList(),
-            //     ],
-            //   ),
+                    // Value to display in the dropdown
+                    value: selectedValue,
 
-            // DropdownButtonFormField<String>(
-            //   value: _paymentType,
-            //   decoration: InputDecoration(
-            //     labelStyle: GoogleFonts.poppins(
-            //         fontSize: 16, fontWeight: FontWeight.normal),
-            //     labelText: "Payment Contract Type",
-            //     border: OutlineInputBorder(
-            //       borderRadius: BorderRadius.circular(8.0),
-            //     ),
-            //   ),
-            //   items: ["Cash", "Credit", "Online"]
-            //       .map((type) => DropdownMenuItem(
-            //             value: type,
-            //             child: Text(
-            //               type,
-            //               style: GoogleFonts.poppins(fontSize: 16),
-            //             ),
-            //           ))
-            //       .toList(),
-            //   onChanged: (value) {
-            //     setState(() {
-            //       _paymentType = value;
-            //     });
-            //   },
-            // ),
-            // SizedBox(height: 16.0),
+                    // Hint when no item is selected
+                    hint: Text(
+                      'Select payment mode',
+                      style: GoogleFonts.poppins(fontSize: 14),
+                    ),
 
-            // // Quantity Needed Field
-            // TextField(
-            //   controller: _quantityController,
-            //   keyboardType: TextInputType.number,
-            //   decoration: InputDecoration(
-            //     labelStyle: GoogleFonts.poppins(
-            //         fontSize: 16, fontWeight: FontWeight.normal),
-            //     labelText: "Quantity Needed",
-            //     border: OutlineInputBorder(
-            //       borderRadius: BorderRadius.circular(8.0),
-            //     ),
-            //   ),
-            // ),
-            // const SizedBox(height: 24.0),
+                    // When an item is selected
+                    onChanged: (value) {
+                      setState(() {
+                        selectedValue = value.toString();
+                      });
+                    },
+                  ),
+                ),
+                // SizedBox(width: 8),
+                DropdownButton<String>(
+                  value: _selectedEmployee,
+                  items: _checkedInEmployees.map((String role) {
+                    return DropdownMenuItem<String>(
+                      value: role,
+                      child: Text(role,
+                          style: GoogleFonts.poppins(
+                              fontSize: 16, fontWeight: FontWeight.normal)),
+                    );
+                  }).toList(),
+                  onChanged: (String? newValue) {
+                    setState(() {
+                      _selectedEmployee = newValue;
+                    });
+                  },
+                  hint: Text(
+                    'Assign employee',
+                    style: GoogleFonts.poppins(fontSize: 14),
+                  ),
+                  onTap: () async {
+                    _checkedInEmployees.isEmpty
+                        ? CupertinoActivityIndicator()
+                        : await _fetchCheckedInEmployees();
+                  },
+                ),
+              ],
+            ),
 
             // Action Buttons
             Row(
@@ -253,20 +304,11 @@ class _DialogBoxState extends State<DialogBox> {
                 ),
                 ElevatedButton(
                   onPressed: () {
-                    if (_shopNameController.text.isNotEmpty &&
-                        _productsController.text.isNotEmpty &&
-                        _quantityController.text.isNotEmpty) {
-                      // Perform save operation here
-                      Navigator.of(context).pop();
-                      // InventoryManager().buildTableRow();
-                      // ScaffoldMessenger.of(context).showSnackBar(
-                      //   SnackBar(
-                      //     content: Text(
-                      //         "Inventory for ${_shopNameController.text} added successfully!",
-                      //         style: GoogleFonts.poppins(
-                      //             fontSize: 16, fontWeight: FontWeight.normal)),
-                      //   ),
-                      // );
+                    if (_shopNameController.text.isNotEmpty) {
+                      _saveInventory();
+                      Future.delayed(Duration(seconds: 1), () {
+                        Navigator.pop(context);
+                      });
                     } else {
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(

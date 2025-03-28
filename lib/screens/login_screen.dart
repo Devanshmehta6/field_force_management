@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:field_force_management/admin%20pages/admin_homepage.dart';
 import 'package:field_force_management/constants.dart';
 import 'package:field_force_management/models/user.dart';
 import 'package:field_force_management/screens/homepage.dart';
@@ -30,29 +31,38 @@ class _LoginScreenState extends State<LoginScreen> {
           .signInWithEmailAndPassword(
               email: emailCont.text.trim(), password: passCont.text.trim());
       final User? user = FirebaseAuth.instance.currentUser;
-      // print("hello: ${user!.email}");
+      
       UserModel.email = user!.email.toString();
 
       final querySnapshot = await FirebaseFirestore.instance
           .collection('Employee Attendance')
           .where('email', isEqualTo: UserModel.email)
           .get();
-      
 
       final snap = await FirebaseFirestore.instance
           .collection("Employee Attendance")
-          .doc(querySnapshot.docs[0].id).get();
-          // .collection("Record")
+          .doc(querySnapshot.docs[0].id)
+          .get();
+      // .collection("Record")
       UserModel.role = snap["role"];
       UserModel.username = snap["username"];
-      
-      // print(snap["phone"]);
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(
-          builder: (context) => HomePage(),
-        ),
-      );
+
+      print(snap["role"]);
+      if (snap['role'] == 'Admin') {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (context) => AdminHomepage(),
+          ),
+        );
+      } else {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (context) => HomePage(),
+          ),
+        );
+      }
     } on FirebaseAuthException catch (e) {
       String error = "";
       if (e.code == 'user-not-found') {
@@ -98,7 +108,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                       SizedBox(height: 25),
                       InputField(
-                        isReadOnly: false,
+                          isReadOnly: false,
                           hintText: "Email",
                           controller: emailCont,
                           isPassword: false),
@@ -125,26 +135,25 @@ class _LoginScreenState extends State<LoginScreen> {
                               backgroundColor: Colors.purple.shade200))
                     ],
                   ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text("New user?",
-                          style: GoogleFonts.poppins(
-                              fontSize: 16, fontWeight: FontWeight.normal)),
-                      TextButton(
-                          child: Text("Sign Up here",
-                              style: GoogleFonts.poppins(
-                                  fontSize: 16, fontWeight: FontWeight.normal)),
-                          onPressed: () {
-                            
-                            Navigator.of(context).pushReplacement(
-                              MaterialPageRoute(
-                                builder: (context) => SignUpScreen(),
-                              ),
-                            );
-                          })
-                    ],
-                  )
+                  // Row(
+                  //   mainAxisAlignment: MainAxisAlignment.center,
+                  //   children: [
+                  //     Text("New user?",
+                  //         style: GoogleFonts.poppins(
+                  //             fontSize: 16, fontWeight: FontWeight.normal)),
+                  //     TextButton(
+                  //         child: Text("Sign Up here",
+                  //             style: GoogleFonts.poppins(
+                  //                 fontSize: 16, fontWeight: FontWeight.normal)),
+                  //         onPressed: () {
+                  //           Navigator.of(context).pushReplacement(
+                  //             MaterialPageRoute(
+                  //               builder: (context) => SignUpScreen(),
+                  //             ),
+                  //           );
+                  //         })
+                  //   ],
+                  // )
                 ],
               ),
             ),
